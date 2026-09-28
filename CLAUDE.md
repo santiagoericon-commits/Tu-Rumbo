@@ -117,6 +117,8 @@ Tono: español de México, sereno, cálido, sin culpa, sin dramatismo. Hablarle 
 8. Reportar pass/fail, archivos tocados, suposiciones, diferidos y preguntas en lista.
 9. Un commit por tarea (salvo excepción declarada en el prompt). `git add -p` para cambios mezclados. **Nunca push sin confirmación de Rafa.**
 
+Worktrees: cada sesión corre en un worktree de la app (`.claude/worktrees/`, rama `claude/...` que se renombra al empezar a implementar). `.env.local` no viaja: se copia a mano en cada worktree nuevo. El merge y el push de un prompt van antes de abrir la sesión del siguiente.
+
 Cambios en archivos protegidos, `app/(protected)/layout.tsx`, migraciones o lógica de tiempo: Plan Mode + `/security-review` antes del commit. En el layout protegido se conserva siempre `getUser()` + `redirect("/login")`.
 
 ## Estado (28 sept 2026)
