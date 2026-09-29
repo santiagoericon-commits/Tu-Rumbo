@@ -1,34 +1,46 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import type { AuthError } from "@supabase/supabase-js";
+import { toAuthErrorCode } from "@/lib/auth-messages";
+import { parseCredentials } from "@/lib/auth-validation";
 import { createClient } from "@/lib/supabase/server";
 
+// Solo el código de Supabase: nunca el correo ni el mensaje crudo.
+function logAuthError(action: "login" | "registro", error: AuthError) {
+  console.error(`[auth] ${action} falló:`, error.code ?? `status-${error.status ?? "desconocido"}`);
+}
+
 export async function loginAction(formData: FormData) {
-  const email = String(formData.get("email") ?? "").trim();
-  const password = String(formData.get("password") ?? "");
+  const credentials = parseCredentials(formData);
+  if (!credentials) redirect("/login?error=datos-invalidos");
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { error } = await supabase.auth.signInWithPassword(credentials);
 
   if (error) {
-    redirect(`/login?error=${encodeURIComponent(error.message)}`);
+    logAuthError("login", error);
+    redirect(`/login?error=${toAuthErrorCode(error.code, error.status)}`);
   }
 
   redirect("/hoy");
 }
 
 export async function signupAction(formData: FormData) {
-  const email = String(formData.get("email") ?? "").trim();
-  const password = String(formData.get("password") ?? "");
+  const credentials = parseCredentials(formData);
+  if (!credentials) redirect("/registro?error=datos-invalidos");
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signUp({ email, password });
+  const { data, error } = await supabase.auth.signUp(credentials);
 
   if (error) {
-    redirect(`/registro?error=${encodeURIComponent(error.message)}`);
+    logAuthError("registro", error);
+    redirect(`/registro?error=${toAuthErrorCode(error.code, error.status)}`);
   }
 
-  redirect("/login?success=Revisa%20tu%20correo%20para%20confirmar%20tu%20cuenta.");
+  // Sin "Confirm email" hay sesión inmediata; con él, hay que confirmar por correo.
+  if (data.session) redirect("/hoy");
+  redirect("/login?success=revisa-correo");
 }
 
 export async function logoutAction() {

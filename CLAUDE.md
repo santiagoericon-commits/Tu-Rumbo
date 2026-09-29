@@ -21,6 +21,8 @@ npm run lint && npm run build   # verificación estándar (build = chequeo de ti
 npm test                        # cuando exista (Vitest con TZ=UTC, se agrega con /hoy)
 ```
 
+Docs de Next de la versión instalada: `node_modules/next/dist/docs`. Consultarlas antes de usar una API de Next.
+
 No usar `npx tsc --noEmit` solo: en un clon limpio falla por `LayoutProps`, un tipo que genera Next (`next build` o `next typegen`).
 
 Variables: solo `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Se incrustan en build; si cambian en Vercel, hay que redeployar.
@@ -37,6 +39,7 @@ Variables: solo `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Se
 | `app/layout.tsx` | Root layout con footer "Rumbo no sustituye la atención médica." (**no quitar**) |
 | `app/manifest.ts`, `public/sw.js`, `app/service-worker-register.tsx` | PWA |
 | `supabase/migrations/` | Esquema. **Nunca editar una migración aplicada**; crear una nueva |
+| `lib/auth-messages.ts`, `lib/auth-validation.ts` | Diccionario cerrado de mensajes de auth y validación de credenciales |
 | `lib/date-range.ts`, `lib/dose-schedule.ts` | (por crear) Lógica de tiempo. Solo cambian con tests |
 
 ## Patrones obligatorios
@@ -128,8 +131,8 @@ Cambios en archivos protegidos, `app/(protected)/layout.tsx`, migraciones o lóg
 - Prueba de dos cuentas: pasa en Postgres local con stubs de `auth`; **pendiente contra el Supabase real** con `supabase/verify-cross-user.sql` (esperado: `RESULTADO: 9/9 pruebas OK`). Repetir tras cada migración.
 
 Hallazgos abiertos:
-- **SEC-01**: `auth-actions.ts` pone `error.message` en la URL y login/registro renderizan cualquier `?error=`/`?success=` (inyección de mensajes falsos).
-- **UI-01**: en modo oscuro, `body {}` sin capa en `globals.css` le gana a Tailwind; texto claro sobre tarjetas blancas.
 - **DB-01**: `doses.medication_id` acepta NULL (dosis huérfanas).
 - **DB-02**: sin trigger de creación de `profiles`.
 - **PWA-01**: falta `app/apple-icon.png` (iOS no usa los SVG del manifest).
+
+Cerrados: **SEC-01** (mensajes por código y validación en servidor) y **UI-01** (modo claro forzado; modo oscuro completo post-presentación) en fix/base-segura.

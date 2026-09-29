@@ -1,25 +1,30 @@
 import Link from "next/link";
 import { loginAction } from "@/app/auth-actions";
+import { getAuthErrorMessage, getAuthSuccessMessage } from "@/lib/auth-messages";
 
 type LoginPageProps = {
   searchParams: Promise<{
-    error?: string;
-    success?: string;
+    error?: string | string[];
+    success?: string | string[];
   }>;
 };
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const params = await searchParams;
+  const errorMessage = getAuthErrorMessage(params.error);
+  const successMessage = getAuthSuccessMessage(params.success);
 
   return (
     <div className="mx-auto flex min-h-full w-full max-w-md flex-col justify-center gap-4 p-6">
       <h1 className="text-2xl font-semibold">Iniciar sesión</h1>
-      {params.error ? (
-        <p className="rounded-md bg-red-50 p-3 text-sm text-red-700">{params.error}</p>
+      {errorMessage ? (
+        <p role="alert" className="rounded-md bg-red-50 p-3 text-sm text-red-700">
+          {errorMessage}
+        </p>
       ) : null}
-      {params.success ? (
-        <p className="rounded-md bg-green-50 p-3 text-sm text-green-700">
-          {params.success}
+      {successMessage ? (
+        <p role="status" className="rounded-md bg-green-50 p-3 text-sm text-green-700">
+          {successMessage}
         </p>
       ) : null}
       <form className="space-y-3 rounded-md border bg-white p-4" action={loginAction}>

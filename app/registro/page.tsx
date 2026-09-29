@@ -1,20 +1,24 @@
 import Link from "next/link";
 import { signupAction } from "@/app/auth-actions";
+import { getAuthErrorMessage } from "@/lib/auth-messages";
 
 type SignupPageProps = {
   searchParams: Promise<{
-    error?: string;
+    error?: string | string[];
   }>;
 };
 
 export default async function SignupPage({ searchParams }: SignupPageProps) {
   const params = await searchParams;
+  const errorMessage = getAuthErrorMessage(params.error);
 
   return (
     <div className="mx-auto flex min-h-full w-full max-w-md flex-col justify-center gap-4 p-6">
       <h1 className="text-2xl font-semibold">Crear cuenta</h1>
-      {params.error ? (
-        <p className="rounded-md bg-red-50 p-3 text-sm text-red-700">{params.error}</p>
+      {errorMessage ? (
+        <p role="alert" className="rounded-md bg-red-50 p-3 text-sm text-red-700">
+          {errorMessage}
+        </p>
       ) : null}
       <form className="space-y-3 rounded-md border bg-white p-4" action={signupAction}>
         <label className="flex flex-col gap-1 text-sm">
