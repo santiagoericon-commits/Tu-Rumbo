@@ -124,13 +124,19 @@ Worktrees: cada sesión corre en un worktree de la app (`.claude/worktrees/`, ra
 
 Cambios en archivos protegidos, `app/(protected)/layout.tsx`, migraciones o lógica de tiempo: Plan Mode + `/security-review` antes del commit. En el layout protegido se conserva siempre `getUser()` + `redirect("/login")`.
 
-## Estado (28 sept 2026)
+## Estado (29 sept 2026)
 
-- Hecho: scaffold, auth, `proxy.ts`, PWA base, 2 migraciones (RLS + FK compuesta). Lint y build en verde.
+- Hecho: scaffold, auth, `proxy.ts`, PWA base, 2 migraciones (RLS + FK compuesta), base segura (P1). Lint y build en verde.
+- Deploy: Vercel `https://rumbo-livid.vercel.app` (proyecto `rumbo`, Node 22.x), conectado al repo de GitHub; los merges a `main` van a producción (por confirmar en el primer merge). Producción pública; previews y URLs de deployment piden login de Vercel (Standard Protection). Variables en Production y Preview: solo `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+- Supabase: migraciones `20260922171500` y `20260922230000` aplicadas. Historial reparado el 28 sept 2026: estaban registradas con otras versiones (se aplicaron con `apply_migration` del MCP) y el SQL era idéntico. Migraciones nuevas: nunca con `apply_migration` del MCP.
 - Placeholder: las 4 pantallas del MVP.
-- Prueba de dos cuentas: pasa en Postgres local con stubs de `auth`; **pendiente contra el Supabase real** con `supabase/verify-cross-user.sql` (esperado: `RESULTADO: 9/9 pruebas OK`). Repetir tras cada migración.
+- Prueba de dos cuentas contra el Supabase real (28 sept 2026, `supabase/verify-cross-user.sql`): `RESULTADO: 9/9 pruebas OK`. Repetir tras cada migración.
+- Auth (demo): Confirm email desactivado, registro cerrado, 2 cuentas demo creadas desde el dashboard, solo datos ficticios.
 
 Hallazgos abiertos:
+- **AUTH-01**: Confirm email desactivado y registro cerrado durante la demo (cuentas creadas desde el dashboard). Antes de usuarios reales: reabrir el registro solo con Confirm email activo, crear la ruta de confirmación (exchangeCodeForSession o verifyOtp) y configurar SMTP propio; con Confirm email desactivado se puede saber si un correo tiene cuenta.
+- **AUTH-02**: protección de contraseñas filtradas (HaveIBeenPwned) desactivada; requiere plan Pro de Supabase.
+- **DB-03**: `anon` y `authenticated` conservan los grants por defecto de Supabase en las 5 tablas, incluido `TRUNCATE`, que no respeta RLS. Hoy no es explotable (PostgREST no lo expone y no hay funciones RPC). Se revoca en la migración de P4, junto con DB-01. Después, repetir `verify-cross-user.sql`.
 - **DB-01**: `doses.medication_id` acepta NULL (dosis huérfanas).
 - **DB-02**: sin trigger de creación de `profiles`.
 - **PWA-01**: falta `app/apple-icon.png` (iOS no usa los SVG del manifest).
