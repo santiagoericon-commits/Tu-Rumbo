@@ -18,7 +18,7 @@ Fase actual: prototipo para presentación del **miércoles 30 sept 2026**. Solo 
 ```bash
 npm run dev
 npm run lint && npm run build   # verificación estándar (build = chequeo de tipos)
-npm test                        # cuando exista (Vitest con TZ=UTC, se agrega con /hoy)
+npm test                        # Vitest 4.1.11 (fijo; Vitest 5 pide Node 22) con TZ=UTC, tests en lib/**/*.test.ts
 ```
 
 Docs de Next de la versión instalada: `node_modules/next/dist/docs`. Consultarlas antes de usar una API de Next.
@@ -40,7 +40,13 @@ Variables: solo `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Se
 | `app/manifest.ts`, `public/sw.js`, `app/service-worker-register.tsx` | PWA |
 | `supabase/migrations/` | Esquema. **Nunca editar una migración aplicada**; crear una nueva |
 | `lib/auth-messages.ts`, `lib/auth-validation.ts` | Diccionario cerrado de mensajes de auth y validación de credenciales |
-| `lib/date-range.ts`, `lib/dose-schedule.ts` | (por crear) Lógica de tiempo. Solo cambian con tests |
+| `lib/timezone.ts` | Zona del usuario: `DEFAULT_TZ` (America/Mazatlan), `TIME_ZONE_PATTERN`, `isValidTimeZone`, `resolveTimeZone`. Puro (lo usa también el cliente) |
+| `lib/timezone.server.ts` | `getUserTimeZone()`: lee la cookie `tz` en el servidor y la resuelve |
+| `lib/date-range.ts` | `getDayRange(tz, now)`, `formatTime`, `formatDayHeading`. Solo `Intl`. Lógica de tiempo: solo cambia con tests |
+| `lib/dose-status.ts`, `lib/dose-summary.ts` | Validación de la acción de dosis (UUID + taken/pending, nunca missed) y texto del resumen de `/hoy` |
+| `components/time-zone-sync.tsx` | Escribe la cookie `tz` desde el navegador y hace un solo `router.refresh()` si cambió |
+| `components/submit-button.tsx` | Botón de envío compartido con `useFormStatus` |
+| `lib/dose-schedule.ts` | (por crear) Generación de dosis a partir de la frecuencia. Solo cambia con tests |
 
 ## Patrones obligatorios
 
@@ -52,7 +58,7 @@ Variables: solo `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Se
 - Tras mutar, revalidar con la API vigente de Next 16. Verificar APIs contra la documentación de la versión instalada, no de memoria.
 - Estados de carga, error y vacío en toda pantalla con datos.
 - Sin `any`. Componentes < ~150 líneas; lógica pura en `lib/`.
-- Tailwind con tokens en `@theme` de `app/globals.css`; nada de colores hardcodeados en `style=`.
+- Tailwind con tokens en `@theme` de `app/globals.css`; nada de colores hardcodeados en `style=`. Tokens semánticos: `surface`, `surface-muted`, `ink`, `ink-muted`, `line`, `accent`, `accent-ink` (valores neutros provisionales; P6 los cambia). Pantallas nuevas usan solo estos tokens, sin `zinc-*`/`green-*`.
 
 ## Tiempo (crítico)
 
@@ -80,6 +86,7 @@ Tablas: `profiles` (sin trigger de creación), `medications`, `doses` (FK compue
 - Nada personal, de salud ni texto libre en URLs, query strings o logs.
 - `public/sw.js` no cachea datos de salud.
 - Señala riesgos de seguridad o privacidad aunque no te lo pidan.
+- En verificaciones con navegador, nunca leer document.cookie completo, localStorage ni sessionStorage: solo cookies por nombre (ej. tz). Los tokens de sesión nunca van al transcript.
 
 ## Contenido clínico
 
@@ -129,7 +136,8 @@ Cambios en archivos protegidos, `app/(protected)/layout.tsx`, migraciones o lóg
 - Hecho: scaffold, auth, `proxy.ts`, PWA base, 2 migraciones (RLS + FK compuesta), base segura (P1). Lint y build en verde.
 - Deploy: Vercel `https://rumbo-livid.vercel.app` (proyecto `rumbo`, Node 22.x), conectado al repo de GitHub; los merges a `main` van a producción (por confirmar en el primer merge). Producción pública; previews y URLs de deployment piden login de Vercel (Standard Protection). Variables en Production y Preview: solo `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
 - Supabase: migraciones `20260922171500` y `20260922230000` aplicadas. Historial reparado el 28 sept 2026: estaban registradas con otras versiones (se aplicaron con `apply_migration` del MCP) y el SQL era idéntico. Migraciones nuevas: nunca con `apply_migration` del MCP.
-- Placeholder: las 4 pantallas del MVP.
+- `/hoy` (P3): dosis del día en la zona del usuario (cookie `tz`, fallback America/Mazatlan), ordenadas; marcar como tomada y deshacer con `useOptimistic` + `useFormStatus`; resumen neutro; estados vacío, carga y error. 82 tests de Vitest (zonas, 23:30/00:15, Tijuana 23 h/25 h, formato 12 h, auth).
+- Placeholder: `/medicamentos`, `/citas`, `/sintomas`.
 - Prueba de dos cuentas contra el Supabase real (28 sept 2026, `supabase/verify-cross-user.sql`): `RESULTADO: 9/9 pruebas OK`. Repetir tras cada migración.
 - Auth (demo): Confirm email desactivado, registro cerrado, 2 cuentas demo creadas desde el dashboard, solo datos ficticios.
 

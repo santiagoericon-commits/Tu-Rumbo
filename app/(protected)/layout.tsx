@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { logoutAction } from "@/app/auth-actions";
+import { TimeZoneSync } from "@/components/time-zone-sync";
 import { createClient } from "@/lib/supabase/server";
+import { getUserTimeZone } from "@/lib/timezone.server";
 
 export default async function ProtectedLayout({
   children,
@@ -17,8 +19,11 @@ export default async function ProtectedLayout({
     redirect("/login");
   }
 
+  const timeZone = await getUserTimeZone();
+
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 p-6">
+      <TimeZoneSync current={timeZone} />
       <header className="rounded-md border bg-white p-4">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <h1 className="text-xl font-semibold">Rumbo</h1>
