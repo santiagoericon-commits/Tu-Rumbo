@@ -5,7 +5,7 @@ type AuthFrameProps = {
   heading: string;
   settle?: boolean;
   children: ReactNode;
-  footer: ReactNode;
+  footer?: ReactNode;
 };
 
 // Primera impresión de Rumbo: marca, nombre y una frase; la tarea (entrar o crear cuenta) en una tarjeta.
@@ -23,7 +23,7 @@ export function AuthFrame({ heading, settle = false, children, footer }: AuthFra
         </h2>
         {children}
       </section>
-      <p className="text-center text-body text-ink-muted">{footer}</p>
+      {footer ? <p className="text-center text-body text-ink-muted">{footer}</p> : null}
     </main>
   );
 }
