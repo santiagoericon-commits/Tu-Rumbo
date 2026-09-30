@@ -9,6 +9,7 @@ type SubmitButtonProps = {
   className?: string;
 };
 
+// La variante (buttonPrimary, buttonSecondary…) llega en className desde components/ui/styles.ts.
 export function SubmitButton({ children, pendingLabel, className = "" }: SubmitButtonProps) {
   const { pending } = useFormStatus();
 
@@ -17,7 +18,7 @@ export function SubmitButton({ children, pendingLabel, className = "" }: SubmitB
       type="submit"
       disabled={pending}
       aria-disabled={pending}
-      className={`min-h-12 touch-manipulation rounded-md px-4 text-base focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-wait ${className}`}
+      className={`inline-flex items-center justify-center disabled:cursor-wait ${className}`}
     >
       {pending ? pendingLabel : children}
     </button>

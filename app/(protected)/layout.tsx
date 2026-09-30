@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
-import { logoutAction } from "@/app/auth-actions";
+import { TabBar } from "@/components/app-shell/tab-bar";
+import { TopBar } from "@/components/app-shell/top-bar";
 import { TimeZoneSync } from "@/components/time-zone-sync";
 import { createClient } from "@/lib/supabase/server";
 import { getUserTimeZone } from "@/lib/timezone.server";
@@ -22,33 +22,19 @@ export default async function ProtectedLayout({
   const timeZone = await getUserTimeZone();
 
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 p-6">
+    <>
       <TimeZoneSync current={timeZone} />
-      <header className="rounded-md border bg-white p-4">
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-          <h1 className="text-xl font-semibold">Rumbo</h1>
-          <form action={logoutAction}>
-            <button className="rounded-md border px-3 py-1.5 text-sm" type="submit">
-              Cerrar sesión
-            </button>
-          </form>
-        </div>
-        <nav className="flex flex-wrap gap-3 text-sm">
-          <Link className="underline" href="/hoy">
-            Hoy
-          </Link>
-          <Link className="underline" href="/medicamentos">
-            Medicamentos
-          </Link>
-          <Link className="underline" href="/citas">
-            Citas
-          </Link>
-          <Link className="underline" href="/sintomas">
-            Síntomas
-          </Link>
-        </nav>
-      </header>
-      <section className="rounded-md border bg-white p-4">{children}</section>
-    </div>
+      <a
+        href="#contenido"
+        className="sr-only rounded-control bg-surface px-4 py-3 text-body text-accent focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50"
+      >
+        Saltar al contenido
+      </a>
+      <TopBar />
+      <main id="contenido" className="mx-auto w-full max-w-lg flex-1 px-4 pb-6">
+        {children}
+      </main>
+      <TabBar />
+    </>
   );
 }

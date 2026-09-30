@@ -45,3 +45,7 @@ next-env.d.ts
 # Claude Code worktrees
 .claude/worktrees/
 .claude/launch.json
+
+# Salidas locales (Playwright MCP, entregables de Claude)
+.playwright-mcp/
+Claude outputs/
