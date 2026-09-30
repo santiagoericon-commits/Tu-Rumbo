@@ -63,7 +63,7 @@ Variables: solo `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Se
 | `components/time-zone-sync.tsx` | Escribe la cookie `tz` desde el navegador y hace un solo `router.refresh()` si cambió |
 | `components/submit-button.tsx` | Botón de envío compartido con `useFormStatus`; la variante llega por `className` |
 | `components/ui/` | `styles.ts` (buttonPrimary, buttonSecondary, buttonQuiet, textLink, field, fieldLabel, card, cardTitle), `page-header`, `notice` (error=alert, success=status, info sin role), `empty-state`, `delete-confirm`, `error-panel`, `skeletons` |
-| `components/app-shell/` | `sections.ts` (fuente única de las 4 secciones: ruta, pestaña, ícono, tinte), `top-bar`, `tab-bar` (`data-app-tabbar`, `aria-current`), `auth-frame` (login y registro) |
+| `components/app-shell/` | `sections.ts` (fuente única de las 4 secciones: ruta, pestaña, ícono, tinte), `top-bar`, `tab-bar` (`data-app-tabbar`, `aria-current` con la ruta real, pestaña optimista con `onNavigate` que se reinicia al cambiar la ruta, barra deslizante), `auth-frame` (login y registro) |
 | `components/icons.tsx`, `components/rumbo-mark.tsx` | Íconos de interfaz (paths de Lucide, ISC) y la marca con tokens |
 | `docs/diseno.md`, `docs/fuentes.md` | Sistema de diseño (semilla de la skill `rumbo-diseno`) y fuentes de copy con contenido de salud |
 
@@ -136,6 +136,7 @@ Tono: español de México, sereno, cálido, sin culpa, sin dramatismo. Hablarle 
 - iOS: las notificaciones push de una PWA solo funcionan si la app está instalada en la pantalla de inicio; el onboarding debe explicarlo cuando exista push (v2). `app/apple-icon.png` existe desde P6 (se regenera con `scripts/generate-icons.mjs`).
 - Modo oscuro: soportado completo con tokens o forzado a claro con `color-scheme: light`. Nunca a medias.
 - Dirección visual (P6, detalle en `docs/diseno.md`): fondo crema (`canvas`) con tarjetas blancas, Source Serif 4 solo en títulos e Inter 18 px en el cuerpo (`next/font`), marca de aguja de brújula, shell con barra inferior de 4 pestañas.
+- Movimiento: reglas en `docs/diseno.md` §13 (duraciones, curvas, reduced motion). Solo `motion-safe` para desplazamientos, sin rebote ni movimiento como premio. `var()` no funciona como `animation-timing-function` dentro de un keyframe: curva literal.
 - Reglas de acento: pine (`accent`) es el único color de acción, foco y pestaña activa. Coral, sky y plum son solo identidad de sección (Medicamentos, Citas, Síntomas): ícono, tinte del encabezado y estado vacío, y en Síntomas la escala y el chip. Nunca en botones, errores, eliminar ni estados. Coral nunca para síntomas. Estados (pendiente/tomada, error/éxito) por ícono y texto, nunca por color.
 - La barra inferior es fija: `data-app-tabbar` reserva su alto en el body y como `scroll-padding-bottom`. Una pantalla nueva no necesita hacer nada extra, pero debe verificarse que el footer quede visible al final del scroll.
 
@@ -171,6 +172,7 @@ Cambios en archivos protegidos, `app/(protected)/layout.tsx`, migraciones o lóg
 - Prueba de dos cuentas contra el Supabase real (`supabase/verify-cross-user.sql`): `RESULTADO: 9/9 pruebas OK` el 30 sept 2026, tras la migración `20260930041030` (la prueba 9 ahora espera `permission denied` para `anon`). Repetir tras cada migración.
 - Auth (demo): Confirm email desactivado, registro cerrado, 2 cuentas demo creadas desde el dashboard, solo datos ficticios.
 - Pase visual (P6, 30 sept 2026, rama `feat/pase-visual`): tokens definitivos, Inter + Source Serif 4, marca e íconos PWA en PNG, shell con barra superior y barra inferior de 4 pestañas ("Medicinas" en la pestaña, D1), login y registro rediseñados, las 4 pantallas con PageHeader por sección, tarjetas, avisos neutros, estados vacío/carga/error y escala de síntomas con palabras (D2). Solo presentación: lógica, acciones y `lib/**` sin cambios (salvo un comentario); 206 tests en verde. Sistema en `docs/diseno.md`.
+- Fluidez (P6.5, 30 sept 2026, rama `feat/fluidez`): la pestaña tocada se ve activa en el siguiente frame (`onNavigate`; sin precarga, 4 ms contra 1.2 s de la ruta real con Slow 4G) y una sola barra se desliza entre columnas (D3); el esqueleto de `loading.tsx` es invisible los primeros 150 ms; el contenido entra con `screen-enter` (240 ms, sin transform residual, no se repite con acciones ni con `router.refresh()`); avisos y filas nuevas de horario entran con `enterFromAbove`; foco al horario nuevo y al anterior al quitar; `ease-out-strong` en botones y DeleteConfirm; aguja sin quiebre en el 65%. Solo CSS e interfaz; 206 tests sin cambios.
 
 Hallazgos abiertos:
 - **AUTH-01**: Confirm email desactivado y registro cerrado durante la demo (cuentas creadas desde el dashboard). Antes de usuarios reales: reabrir el registro solo con Confirm email activo, crear la ruta de confirmación (exchangeCodeForSession o verifyOtp) y configurar SMTP propio; con Confirm email desactivado se puede saber si un correo tiene cuenta.

@@ -74,18 +74,18 @@ Los tamaños van en rem para respetar el tamaño de letra del sistema. El peso v
 
 | Componente | Archivo | Anatomía | Estados |
 |---|---|---|---|
-| Botón primario | `components/ui/styles.ts` → `buttonPrimary` | bg `accent`, texto `accent-ink` `text-button`, min 52 px, `rounded-control`; ancho completo en formularios | hover y presionado `accent-strong` + `scale(0.98)` (solo motion-safe, 150 ms); pendiente: texto "Guardando…" y `cursor-wait` |
+| Botón primario | `components/ui/styles.ts` → `buttonPrimary` | bg `accent`, texto `accent-ink` `text-button`, min 52 px, `rounded-control`; ancho completo en formularios | hover y presionado `accent-strong` + `scale(0.98)` (solo motion-safe, 150 ms, ease-out-strong); pendiente: texto "Guardando…" y `cursor-wait` |
 | Botón secundario | `buttonSecondary` | borde 2 px `line-strong`, bg `surface`, texto `ink`, min 48 px | hover y presionado `surface-muted` |
 | Botón discreto | `buttonQuiet` | texto `secondary` `ink-muted` subrayado, min 48 px | hover y presionado `surface-muted` |
 | Enlace | `textLink` | `accent` subrayado 2 px, min 48 px | — |
 | Campo | `field` + `fieldLabel` | label visible arriba, min 52 px, borde 2 px `line-strong`, `text-body` (evita el zoom de iOS) | foco global; el autocompletado del navegador se tapa con `surface` |
 | Foco | `globals.css` | outline 3 px `accent`, offset 2 px, en todo `:focus-visible` | — |
 | PageHeader | `components/ui/page-header.tsx` | banda `rounded-card` con el tinte de la sección, círculo blanco de 48 px con el ícono en el ink de la sección, h1 serif en `ink`, subtítulo `ink-muted` | con zoom alto el título baja debajo del ícono |
-| Notice | `components/ui/notice.tsx` | fondo `surface-muted`, texto `ink`, ícono info o check | `error` → `role="alert"`; `success` → `role="status"`; `info` sin role; `announce={false}` dentro de una región viva existente |
+| Notice | `components/ui/notice.tsx` | fondo `surface-muted`, texto `ink`, ícono info o check | `error` → `role="alert"`; `success` → `role="status"`; `info` sin role; `announce={false}` dentro de una región viva existente. `error` y `success` entran con opacidad y 4 px (`enterFromAbove`, 200 ms); `info` no se anima |
 | EmptyState | `components/ui/empty-state.tsx` | ícono de sección a 64 px en su color, título `text-name`, una frase y un solo botón | — |
-| DeleteConfirm | `components/ui/delete-confirm.tsx` | "Eliminar" discreto → caja `surface-muted` con la pregunta, "Sí, eliminar" (primario) y "No, conservar" (secundario), apilados | entra con `@starting-style` (180–200 ms); el foco va a "No, conservar" y regresa a "Eliminar" al cancelar o si falla |
+| DeleteConfirm | `components/ui/delete-confirm.tsx` | "Eliminar" discreto → caja `surface-muted` con la pregunta, "Sí, eliminar" (primario) y "No, conservar" (secundario), apilados | entra con `@starting-style` (`enterFromAbove`, 200 ms, ease-out-strong); el foco va a "No, conservar" y regresa a "Eliminar" al cancelar o si falla |
 | ErrorPanel | `components/ui/error-panel.tsx` | PageHeader + Notice error + "Intentar de nuevo" (`retry`) | nunca muestra `error.message` |
-| Esqueletos | `components/ui/skeletons.tsx` | banda y tarjetas con la forma real, `surface-muted`, `motion-safe:animate-pulse` | contenedor `aria-busy` + texto sr-only |
+| Esqueletos | `components/ui/skeletons.tsx` | banda y tarjetas con la forma real, `surface-muted`, `motion-safe:animate-pulse` | contenedor `aria-busy` + texto sr-only; en cada `loading.tsx` el contenedor es invisible los primeros 150 ms, así que solo se ve si la carga tarda |
 | SubmitButton | `components/submit-button.tsx` | `useFormStatus`; la variante llega por `className` | pendiente: `pendingLabel` |
 | Tarjeta de dosis | `app/(protected)/hoy/dose-item.tsx` | hora `text-time` + estado (reloj "Pendiente" / check "Tomada", mismo color) · nombre · dosis · botón de ancho completo | pendiente → "Ya la tomé" (primario); tomada → "Deshacer" (secundario). La tarjeta no cambia de fondo ni de borde |
 | Escala de síntomas | `app/(protected)/sintomas/symptom-level-field.tsx` | 5 filas de ≥ 56 px, toda la fila tocable: círculo, palabra `text-name`, "n de 5" a la derecha, todo `plum-ink` | sin elegir: `surface` + borde `line-strong`; elegida: `plum-tint` + borde `plum-ink`, check y palabra en negritas. Flechas nativas de radio. Nombre accesible "Algo, 3 de 5" |
@@ -124,7 +124,7 @@ Prohibido: cruces médicas, corazones, termómetros, listones y cualquier ícono
 Aguja de brújula: un "rombo" que marca el rumbo. Punta crema al norte, sage-soft al sur, eje pine, sobre pine.
 
 - `app/icon.svg`: fuente de 512×512 con `rx` 112 (favicon).
-- `components/rumbo-mark.tsx`: el mismo dibujo con tokens (`fill-accent`, `fill-canvas`, `fill-sage-soft`). Con `settle` (solo en /login), la aguja se asienta una vez: −32° → 5° → 0° en 900 ms con ease-out fuerte, solo con `motion-safe`. Es el único momento de movimiento no pedido en toda la app.
+- `components/rumbo-mark.tsx`: el mismo dibujo con tokens (`fill-accent`, `fill-canvas`, `fill-sage-soft`). Con `settle` (solo en /login), la aguja se asienta una vez en 900 ms, solo con `motion-safe`: −32° → 5° con ease-out fuerte y 5° → 0° con ease-in-out fuerte (sin quiebre de velocidad al dar la vuelta). Es el único momento de marca. El movimiento funcional de navegación y de estado está permitido con las reglas de §13.
 - `scripts/generate-icons.mjs`: PNG sin alfa con fondo pine a sangre (iOS y Android aplican su máscara). `apple-icon.png` 180 y `icon-192/512` a escala 1.05; `icon-maskable-512` a 0.9 (la aguja llega a 153 px del centro, dentro de la zona segura de 204.8 px).
 
 ## 9. Microcopy
@@ -157,6 +157,7 @@ Todo copy nuevo que menciona dosis, medicamentos, síntomas o citas lleva `[PEND
 - **Título del encabezado en `ink`**, no en el acento: el acento es identidad, no texto.
 - **Estados sin color:** pendiente y tomada se distinguen por ícono, texto y botón.
 - **Sin vibración:** el feedback principal es el estado presionado (< 100 ms).
+- **D3 · Barra de pestaña deslizante (P6.5).** Revierte el rechazo de la revisión de movimiento, que la descartó por frecuencia de uso: la frecuencia pide un movimiento corto, no quitarlo. La barra confirma a dónde fuiste. Una sola barra se desliza entre columnas (`translate`, 200 ms, `ease-out-strong`, solo `motion-safe`; con reduced motion salta). La pestaña tocada se ve activa en el siguiente frame (`onNavigate`), sin esperar al servidor; `aria-current` sigue a la ruta real.
 - **Fuera de alcance de P6:**
 
 | Idea | Por qué no |
@@ -171,3 +172,23 @@ Todo copy nuevo que menciona dosis, medicamentos, síntomas o citas lleva `[PEND
 ## 12. Fuentes
 
 Principios 1–7: revisión sistemática JMIR mHealth 2023 (guías para adultos mayores); revisión de 132 artículos (PubMed 40804492); grupos focales con sobrevivientes de cáncer (JMIR mHealth 2017); necesidades de pacientes oncológicos (JMIR Cancer 2023); WCAG 2.2 (1.4.3, 1.4.4, 1.4.11, 2.4.11); Material 3 Navigation bar; Apple HIG Tab bars. Detalle, enlaces y estado de verificación en `docs/fuentes.md`.
+
+## 13. Movimiento
+
+Movimiento funcional: confirma lo que la persona hizo o evita que algo aparezca de golpe. Tokens en `@theme` de `app/globals.css`; entradas al montarse con `enterFromAbove` (`components/ui/styles.ts`).
+
+| Qué | Duración | Curva | Con reduced motion |
+|---|---|---|---|
+| Entrada de pantalla (`animate-screen-enter`, raíz de cada página y de ErrorPanel) | 240 ms | ease-out-strong | Aparece sin desplazarse |
+| Barra de pestaña | 200 ms | ease-out-strong | Salta |
+| Esqueleto (`animate-skeleton-in`) | 150 ms de retraso + 150 ms de fundido | ease-out-strong | Solo el retraso (`animate-skeleton-wait`) |
+| Avisos y filas nuevas (`enterFromAbove`) | 200 ms | ease-out-strong | Solo opacidad |
+| Presión de botón | 150 ms | ease-out-strong | Sin escala |
+| Aguja del login | 900 ms, una vez | ease-out-strong + ease-in-out final | Quieta |
+
+- Nada de rebote, confeti, rachas ni movimiento como premio. Marcar una dosis no anima nada.
+- Solo se animan `opacity`, `translate`, `scale` y `transform`. Nunca `width`, `height`, `top`, `margin` ni colores de estado.
+- Todo desplazamiento va detrás de `motion-safe`.
+- La entrada de pantalla usa `animation-fill-mode: backwards`: al terminar no queda `translate` que cambie el bloque contenedor de `fixed`/`sticky`. No va en un `template.tsx` (con `loading.tsx` animaría el esqueleto) y no se escalonan tarjetas.
+- No se repite al marcar o deshacer una dosis, al guardar síntomas ni con el `router.refresh()` de `TimeZoneSync`: esos casos reconcilian la misma raíz (verificado en navegador el 30 sept 2026). Guardar una cita usa el mismo mecanismo (Server Action + revalidación); no se probó en vivo.
+- `animation-timing-function` dentro de un keyframe va con la curva literal: Chrome ignora `var()` ahí.
