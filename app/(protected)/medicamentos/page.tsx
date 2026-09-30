@@ -1,4 +1,8 @@
 import { redirect } from "next/navigation";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Notice } from "@/components/ui/notice";
+import { PageHeader } from "@/components/ui/page-header";
+import { card, cardTitle } from "@/components/ui/styles";
 import { addDaysIso, formatLocalDate } from "@/lib/local-time";
 import { MAX_START_OFFSET_DAYS } from "@/lib/medication-validation";
 import { formatScheduleTimes, formatStartDate } from "@/lib/schedule-format";
@@ -45,27 +49,31 @@ export default async function MedicamentosPage() {
   }));
 
   return (
-    <div>
-      <h2 className="text-xl font-semibold text-ink">Medicamentos</h2>
+    <div className="flex flex-col gap-4">
+      <PageHeader section="medicamentos" title="Medicamentos" />
 
       {error ? (
-        <p role="alert" className="mt-4 text-base text-ink">
-          No pudimos cargar tus medicamentos. Inténtalo de nuevo.
-        </p>
+        <Notice kind="error">No pudimos cargar tus medicamentos. Inténtalo de nuevo.</Notice>
       ) : medications.length === 0 ? (
-        <p className="mt-4 text-base text-ink-muted">Aún no has agregado medicamentos.</p>
+        // [PENDIENTE REVISIÓN PROFESIONAL]
+        <EmptyState
+          section="medicamentos"
+          title="Todavía no hay medicamentos."
+          text="Agrega el primero con los datos de tu receta."
+          action={{ href: "#agregar-medicamento", label: "Agregar medicamento" }}
+        />
       ) : (
-        <ul className="mt-4 divide-y divide-line border-y border-line">
+        <ul className="flex flex-col gap-4">
           {medications.map((medication) => (
             <MedicationItem key={medication.id} medication={medication} />
           ))}
         </ul>
       )}
 
-      <section aria-labelledby="agregar-medicamento" className="mt-8">
-        <h3 id="agregar-medicamento" className="text-lg font-semibold text-ink">
+      <section id="agregar-medicamento" aria-labelledby="agregar-medicamento-titulo" className={`${card} mt-4`}>
+        <h2 id="agregar-medicamento-titulo" className={cardTitle}>
           Agregar medicamento
-        </h3>
+        </h2>
         <MedicationForm todayLocal={todayLocal} maxStartDate={maxStartDate} />
       </section>
     </div>

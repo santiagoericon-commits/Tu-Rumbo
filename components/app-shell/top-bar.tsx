@@ -6,7 +6,7 @@ import { RumboMark } from "@/components/rumbo-mark";
 // Barra superior no fija. "Cerrar sesión" queda aquí, lejos de las pestañas.
 export function TopBar() {
   return (
-    <header className="mx-auto flex w-full max-w-lg items-center justify-between gap-3 px-4 pt-[calc(12px+env(safe-area-inset-top))] pb-3">
+    <header className="mx-auto flex w-full max-w-lg flex-wrap items-center justify-between gap-x-3 px-4 pt-[calc(12px+env(safe-area-inset-top))] pb-3">
       <Link href="/hoy" className="-ml-1 flex min-h-12 items-center gap-2 rounded-control px-1">
         <RumboMark className="size-8" />
         <span className="font-serif text-subtitle text-accent">Rumbo</span>

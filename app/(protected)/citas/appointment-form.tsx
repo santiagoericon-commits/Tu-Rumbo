@@ -2,6 +2,8 @@
 
 import { useActionState, useState } from "react";
 import { SubmitButton } from "@/components/submit-button";
+import { Notice } from "@/components/ui/notice";
+import { buttonPrimary, field, fieldLabel } from "@/components/ui/styles";
 import { APPOINTMENT_ERROR_MESSAGES, APPOINTMENT_SAVED_MESSAGE } from "@/lib/appointment-messages";
 import { MAX_APPOINTMENT_NOTES_LENGTH, MAX_TITLE_LENGTH } from "@/lib/appointment-validation";
 import { createAppointmentAction, type CreateAppointmentState } from "./actions";
@@ -10,9 +12,6 @@ import type { AppointmentValues } from "./types";
 const INITIAL: CreateAppointmentState = { status: "idle" };
 const TITLE_HINT_ID = "titulo-ejemplo";
 const NOTES_HINT_ID = "notas-cita-limite";
-
-const fieldClass =
-  "min-h-12 w-full rounded-md border border-line bg-surface px-3 text-base text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
 
 type AppointmentFormProps = { todayLocal: string; maxDate: string };
 
@@ -35,11 +34,11 @@ export function AppointmentForm({ todayLocal, maxDate }: AppointmentFormProps) {
 
   return (
     <form action={submit} className="mt-3 flex flex-col gap-5">
-      <div className="flex flex-col gap-1">
-        <label className="flex flex-col gap-1 text-base text-ink">
+      <div className="flex flex-col gap-2">
+        <label className={fieldLabel}>
           Título
           <input
-            className={fieldClass}
+            className={field}
             type="text"
             name="title"
             required
@@ -49,15 +48,15 @@ export function AppointmentForm({ todayLocal, maxDate }: AppointmentFormProps) {
             aria-describedby={TITLE_HINT_ID}
           />
         </label>
-        <p id={TITLE_HINT_ID} className="text-base text-ink-muted">
+        <p id={TITLE_HINT_ID} className="text-secondary text-ink-muted">
           Por ejemplo: Estudio de control
         </p>
       </div>
 
-      <label className="flex flex-col gap-1 text-base text-ink">
+      <label className={fieldLabel}>
         Fecha
         <input
-          className={fieldClass}
+          className={field}
           type="date"
           name="date"
           required
@@ -67,16 +66,16 @@ export function AppointmentForm({ todayLocal, maxDate }: AppointmentFormProps) {
         />
       </label>
 
-      <label className="flex flex-col gap-1 text-base text-ink">
+      <label className={fieldLabel}>
         Hora
-        <input className={fieldClass} type="time" name="time" required defaultValue={values?.time ?? ""} />
+        <input className={field} type="time" name="time" required defaultValue={values?.time ?? ""} />
       </label>
 
-      <div className="flex flex-col gap-1">
-        <label className="flex flex-col gap-1 text-base text-ink">
+      <div className="flex flex-col gap-2">
+        <label className={fieldLabel}>
           Notas (opcional)
           <textarea
-            className={`${fieldClass} py-2`}
+            className={`${field} py-3`}
             name="notes"
             rows={3}
             maxLength={MAX_APPOINTMENT_NOTES_LENGTH}
@@ -84,25 +83,25 @@ export function AppointmentForm({ todayLocal, maxDate }: AppointmentFormProps) {
             aria-describedby={NOTES_HINT_ID}
           />
         </label>
-        <p id={NOTES_HINT_ID} className="text-base text-ink-muted">
+        <p id={NOTES_HINT_ID} className="text-secondary text-ink-muted">
           Hasta {MAX_APPOINTMENT_NOTES_LENGTH} caracteres.
         </p>
       </div>
 
-      {state.status === "error" ? (
-        <p role="alert" className="text-base text-ink">
-          {APPOINTMENT_ERROR_MESSAGES[state.code]}
-        </p>
-      ) : null}
+      {state.status === "error" ? <Notice kind="error">{APPOINTMENT_ERROR_MESSAGES[state.code]}</Notice> : null}
 
-      <SubmitButton pendingLabel="Guardando…" className="w-full bg-accent text-accent-ink">
+      <SubmitButton pendingLabel="Guardando…" className={`${buttonPrimary} w-full`}>
         Guardar cita
       </SubmitButton>
 
       {/* Región viva siempre presente para que el aviso se anuncie al aparecer. */}
-      <p role="status" className="text-base text-ink">
-        {state.status === "saved" ? APPOINTMENT_SAVED_MESSAGE : null}
-      </p>
+      <div role="status">
+        {state.status === "saved" ? (
+          <Notice kind="success" announce={false}>
+            {APPOINTMENT_SAVED_MESSAGE}
+          </Notice>
+        ) : null}
+      </div>
     </form>
   );
 }

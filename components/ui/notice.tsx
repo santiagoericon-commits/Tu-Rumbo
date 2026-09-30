@@ -5,12 +5,14 @@ type NoticeProps = {
   kind: "error" | "success" | "info";
   children: ReactNode;
   className?: string;
+  // false cuando el aviso vive dentro de una región viva que ya existe (evita roles anidados).
+  announce?: boolean;
 };
 
 // Aviso neutro: sin rojo ni verde. El tipo se distingue por ícono y texto.
 // role="alert" solo en error y role="status" solo en éxito; info es contenido estático sin role.
-export function Notice({ kind, children, className = "" }: NoticeProps) {
-  const role = kind === "error" ? "alert" : kind === "success" ? "status" : undefined;
+export function Notice({ kind, children, className = "", announce = true }: NoticeProps) {
+  const role = !announce ? undefined : kind === "error" ? "alert" : kind === "success" ? "status" : undefined;
   const Icon = kind === "success" ? CircleCheckIcon : InfoIcon;
 
   return (

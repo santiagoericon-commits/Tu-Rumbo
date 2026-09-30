@@ -1,4 +1,8 @@
 import { redirect } from "next/navigation";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Notice } from "@/components/ui/notice";
+import { PageHeader } from "@/components/ui/page-header";
+import { card, cardTitle } from "@/components/ui/styles";
 import { partitionAppointments } from "@/lib/appointment-list";
 import { MAX_APPOINTMENT_OFFSET_DAYS } from "@/lib/appointment-validation";
 import { formatLongDate, formatTime } from "@/lib/date-range";
@@ -51,21 +55,25 @@ export default async function CitasPage() {
   const { upcoming, past } = partitionAppointments(appointments, now);
 
   return (
-    <div>
-      <h2 className="text-xl font-semibold text-ink">Citas</h2>
+    <div className="flex flex-col gap-4">
+      <PageHeader section="citas" title="Citas" />
 
-      <section aria-labelledby="citas-proximas" className="mt-4">
-        <h3 id="citas-proximas" className="text-lg font-semibold text-ink">
+      <section aria-labelledby="citas-proximas" className="flex flex-col gap-4">
+        <h2 id="citas-proximas" className="px-1 font-serif text-subtitle text-ink">
           Próximas
-        </h3>
+        </h2>
         {error ? (
-          <p role="alert" className="mt-2 text-base text-ink">
-            No pudimos cargar tus citas. Inténtalo de nuevo.
-          </p>
+          <Notice kind="error">No pudimos cargar tus citas. Inténtalo de nuevo.</Notice>
         ) : upcoming.length === 0 ? (
-          <p className="mt-2 text-base text-ink-muted">No tienes citas próximas.</p>
+          // [PENDIENTE REVISIÓN PROFESIONAL]
+          <EmptyState
+            section="citas"
+            title="No tienes citas próximas."
+            text="Cuando tengas un estudio de control, anótalo aquí para tenerlo a la mano."
+            action={{ href: "#agregar-cita", label: "Agregar cita" }}
+          />
         ) : (
-          <ul className="mt-2 divide-y divide-line border-y border-line">
+          <ul className="flex flex-col gap-4">
             {upcoming.map((appointment) => (
               <AppointmentItem key={appointment.id} appointment={appointment} />
             ))}
@@ -73,19 +81,19 @@ export default async function CitasPage() {
         )}
       </section>
 
-      <section aria-labelledby="agregar-cita" className="mt-8">
-        <h3 id="agregar-cita" className="text-lg font-semibold text-ink">
+      <section id="agregar-cita" aria-labelledby="agregar-cita-titulo" className={`${card} mt-4`}>
+        <h2 id="agregar-cita-titulo" className={cardTitle}>
           Agregar cita
-        </h3>
+        </h2>
         <AppointmentForm todayLocal={todayLocal} maxDate={maxDate} />
       </section>
 
       {past.length > 0 ? (
-        <section aria-labelledby="citas-anteriores" className="mt-10">
-          <h3 id="citas-anteriores" className="text-base font-semibold text-ink-muted">
+        <section aria-labelledby="citas-anteriores" className="mt-4 flex flex-col gap-4">
+          <h2 id="citas-anteriores" className="px-1 font-serif text-subtitle text-ink-muted">
             Anteriores
-          </h3>
-          <ul className="mt-2 divide-y divide-line border-y border-line">
+          </h2>
+          <ul className="flex flex-col gap-4">
             {past.map((appointment) => (
               <AppointmentItem key={appointment.id} appointment={appointment} past />
             ))}

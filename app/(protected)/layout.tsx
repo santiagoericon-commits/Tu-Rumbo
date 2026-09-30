@@ -31,7 +31,7 @@ export default async function ProtectedLayout({
         Saltar al contenido
       </a>
       <TopBar />
-      <main id="contenido" className="mx-auto w-full max-w-lg flex-1 px-4 pb-6">
+      <main id="contenido" tabIndex={-1} className="mx-auto w-full max-w-lg flex-1 px-4 pb-6 outline-none">
         {children}
       </main>
       <TabBar />

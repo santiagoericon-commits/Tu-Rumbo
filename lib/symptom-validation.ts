@@ -1,7 +1,8 @@
 import { normalizeMultiline } from "@/lib/form-text";
 
-// Validación en servidor del registro diario. El valor es autorreporte (1 = poco,
-// 5 = mucho): se guarda tal cual, nunca se interpreta. FormData manipulada devuelve null.
+// Validación en servidor del registro diario. El valor es autorreporte de 1 a 5 (1 = Nada,
+// 2 = Un poco, 3 = Algo, 4 = Bastante, 5 = Mucho): se guarda tal cual, nunca se interpreta.
+// FormData manipulada devuelve null.
 
 export const SYMPTOM_LEVELS = [1, 2, 3, 4, 5] as const;
 export type SymptomLevel = (typeof SYMPTOM_LEVELS)[number];

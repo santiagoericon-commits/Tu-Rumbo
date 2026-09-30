@@ -17,10 +17,10 @@ export function DoseList({ doses }: { doses: DoseView[] }) {
 
   return (
     <>
-      <p aria-live="polite" className="mt-1 text-base text-ink-muted">
+      <p aria-live="polite" className="px-1 text-body text-ink-muted">
         {formatDoseSummary(taken, optimisticDoses.length)}
       </p>
-      <ul className="mt-4 divide-y divide-line border-y border-line">
+      <ul className="flex flex-col gap-4">
         {optimisticDoses.map((dose) => (
           <DoseItem key={dose.id} dose={dose} applyOptimistic={applyOptimistic} />
         ))}

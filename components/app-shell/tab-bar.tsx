@@ -21,7 +21,7 @@ export function TabBar() {
           const { href, tabLabel, Icon } = SECTIONS[key];
           const active = pathname === href || pathname.startsWith(`${href}/`);
           return (
-            <li key={key}>
+            <li key={key} className="min-w-0">
               <Link
                 href={href}
                 aria-current={active ? "page" : undefined}
@@ -33,7 +33,8 @@ export function TabBar() {
                   <span aria-hidden="true" className="absolute inset-x-4 top-0 h-0.75 rounded-b-full bg-accent" />
                 ) : null}
                 <Icon className="size-6" active={active} />
-                <span className="whitespace-nowrap" data-tab-label={key}>
+                {/* Con zoom alto la etiqueta se recorta con "…" en vez de encimarse; el texto completo sigue en el DOM. */}
+                <span className="max-w-full truncate px-0.5" data-tab-label={key}>
                   {tabLabel}
                 </span>
               </Link>

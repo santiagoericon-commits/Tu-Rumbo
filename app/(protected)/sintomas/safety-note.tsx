@@ -1,11 +1,14 @@
+import { Notice } from "@/components/ui/notice";
+
 // Mensaje de seguridad estático e incondicional: nunca depende de lo que se registra.
+// Aviso info (sin role, ni plum ni coral).
 export function SafetyNote() {
   return (
     <>
       {/* [PENDIENTE REVISIÓN PROFESIONAL] */}
-      <p className="mt-8 rounded-md bg-surface-muted p-4 text-base text-ink">
+      <Notice kind="info">
         Si algo te preocupa, comunícate con tu equipo médico. En una emergencia, llama al 911.
-      </p>
+      </Notice>
     </>
   );
 }

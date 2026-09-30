@@ -1,5 +1,8 @@
 import { redirect } from "next/navigation";
-import { formatDayHeading } from "@/lib/date-range";
+import { Notice } from "@/components/ui/notice";
+import { PageHeader } from "@/components/ui/page-header";
+import { card, cardTitle } from "@/components/ui/styles";
+import { formatLongDate } from "@/lib/date-range";
 import { addDaysIso, formatLocalDate } from "@/lib/local-time";
 import { formatCalendarDate } from "@/lib/schedule-format";
 import { createClient } from "@/lib/supabase/server";
@@ -56,19 +59,17 @@ export default async function SintomasPage() {
   }));
 
   return (
-    <div>
-      <h2 className="text-xl font-semibold text-ink">Síntomas</h2>
+    <div className="flex flex-col gap-4">
+      <PageHeader section="sintomas" title="Síntomas" subtitle={formatLongDate(now, tz, now)} />
 
       {error ? (
         // Sin formulario: vacío podría sobrescribir el registro de hoy que no se pudo cargar.
-        <p role="alert" className="mt-4 text-base text-ink">
-          No pudimos cargar tu registro. Inténtalo de nuevo.
-        </p>
+        <Notice kind="error">No pudimos cargar tu registro. Inténtalo de nuevo.</Notice>
       ) : (
-        <section aria-labelledby="registro-hoy" className="mt-4">
-          <h3 id="registro-hoy" className="text-lg font-semibold text-ink">
-            {formatDayHeading(now, tz)}
-          </h3>
+        <section aria-labelledby="registro-hoy" className={card}>
+          <h2 id="registro-hoy" className={cardTitle}>
+            Tu registro de hoy
+          </h2>
           <SymptomForm todayLog={todayLog} />
         </section>
       )}

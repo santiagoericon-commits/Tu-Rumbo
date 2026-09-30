@@ -1,7 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { CircleCheckIcon, ClockIcon } from "@/components/icons";
 import { SubmitButton } from "@/components/submit-button";
+import { Notice } from "@/components/ui/notice";
+import { buttonPrimary, buttonSecondary, card } from "@/components/ui/styles";
 import { updateDoseStatusAction } from "./actions";
 import type { DoseUpdate, DoseView } from "./types";
 
@@ -10,27 +13,12 @@ type DoseItemProps = {
   applyOptimistic: (update: DoseUpdate) => void;
 };
 
-function CheckIcon() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 20 20" className="size-5 shrink-0" fill="none">
-      <circle cx="10" cy="10" r="8.5" stroke="currentColor" strokeWidth="1.5" />
-      <path d="M6.5 10.5l2.3 2.3 4.7-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function CircleIcon() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 20 20" className="size-5 shrink-0" fill="none">
-      <circle cx="10" cy="10" r="8.5" stroke="currentColor" strokeWidth="1.5" />
-    </svg>
-  );
-}
-
+// Pendiente y tomada se distinguen por ícono, texto y botón; la tarjeta no cambia de color.
 export function DoseItem({ dose, applyOptimistic }: DoseItemProps) {
   const [failed, setFailed] = useState(false);
   // "missed" se trata como pendiente: la app nunca lo asigna ni lo resalta.
   const isTaken = dose.status === "taken";
+  const StatusIcon = isTaken ? CircleCheckIcon : ClockIcon;
 
   async function toggle() {
     const next = isTaken ? "pending" : "taken";
@@ -41,43 +29,38 @@ export function DoseItem({ dose, applyOptimistic }: DoseItemProps) {
   }
 
   return (
-    <li className="py-5">
-      <p className="text-base tabular-nums text-ink-muted">
-        <time dateTime={dose.scheduledAt} className="whitespace-nowrap">
-          {dose.timeLabel}
-        </time>
-      </p>
-      <p className="mt-1 text-lg text-ink">{dose.name}</p>
-      {dose.dosage ? <p className="text-base text-ink-muted">{dose.dosage}</p> : null}
+    <li className={card}>
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-time text-ink tabular-nums">
+          <time dateTime={dose.scheduledAt} className="whitespace-nowrap">
+            {dose.timeLabel}
+          </time>
+        </p>
+        <p className="inline-flex items-center gap-1.5 text-secondary text-ink-muted">
+          <StatusIcon className="size-5" />
+          {isTaken ? "Tomada" : "Pendiente"}
+        </p>
+      </div>
+      <p className="mt-2 text-name wrap-break-word text-ink">{dose.name}</p>
+      {dose.dosage ? <p className="text-body wrap-break-word text-ink-muted">{dose.dosage}</p> : null}
 
-      <form action={toggle} className="mt-3">
+      <form action={toggle} className="mt-4">
         {isTaken ? (
-          <div className="flex items-center justify-between gap-4">
-            <span className="inline-flex items-center gap-2 rounded-md bg-surface-muted px-3 py-2 text-base text-ink">
-              <CheckIcon />
-              Tomada
-            </span>
-            <SubmitButton pendingLabel="Guardando…" className="text-ink-muted underline underline-offset-4">
-              Deshacer<span className="sr-only">: {dose.name}, {dose.timeLabel}</span>
-            </SubmitButton>
-          </div>
+          <SubmitButton pendingLabel="Guardando…" className={`${buttonSecondary} w-full`}>
+            Deshacer<span className="sr-only">: {dose.name}, {dose.timeLabel}</span>
+          </SubmitButton>
         ) : (
-          <>
-            <p className="inline-flex items-center gap-2 text-base text-ink-muted">
-              <CircleIcon />
-              Pendiente
-            </p>
-            <SubmitButton pendingLabel="Guardando…" className="mt-3 w-full bg-accent text-accent-ink">
-              Marcar como tomada<span className="sr-only">: {dose.name}, {dose.timeLabel}</span>
-            </SubmitButton>
-          </>
+          // [PENDIENTE REVISIÓN PROFESIONAL]
+          <SubmitButton pendingLabel="Guardando…" className={`${buttonPrimary} w-full`}>
+            Ya la tomé<span className="sr-only">: {dose.name}, {dose.timeLabel}</span>
+          </SubmitButton>
         )}
       </form>
 
       {failed ? (
-        <p role="alert" className="mt-3 text-base text-ink">
+        <Notice kind="error" className="mt-3">
           No pudimos guardar el cambio. Inténtalo de nuevo.
-        </p>
+        </Notice>
       ) : null}
     </li>
   );

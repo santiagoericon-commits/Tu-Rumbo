@@ -1,6 +1,8 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
-import { formatDayHeading, formatTime, getDayRange } from "@/lib/date-range";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Notice } from "@/components/ui/notice";
+import { PageHeader } from "@/components/ui/page-header";
+import { formatLongDate, formatTime, getDayRange } from "@/lib/date-range";
 import { createClient } from "@/lib/supabase/server";
 import { getUserTimeZone } from "@/lib/timezone.server";
 import { DoseList } from "./dose-list";
@@ -45,31 +47,25 @@ export default async function HoyPage() {
   }));
 
   return (
-    <div>
-      <h2 className="text-xl font-semibold text-ink">{formatDayHeading(now, tz)}</h2>
+    <div className="flex flex-col gap-4">
+      <PageHeader section="hoy" title="Hoy" size="greeting" subtitle={formatLongDate(now, tz, now)} />
 
       {error ? (
-        <p role="alert" className="mt-4 text-base text-ink">
-          No pudimos cargar tus dosis de hoy. Inténtalo de nuevo.
-        </p>
+        <Notice kind="error">No pudimos cargar tus dosis de hoy. Inténtalo de nuevo.</Notice>
       ) : doses.length === 0 ? (
-        <div className="mt-4">
-          <p className="text-base text-ink-muted">No tienes dosis programadas para hoy.</p>
-          <Link
-            href="/medicamentos"
-            className="mt-2 inline-flex min-h-11 items-center text-base text-accent underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-          >
-            Agregar un medicamento
-          </Link>
-        </div>
+        // [PENDIENTE REVISIÓN PROFESIONAL]
+        <EmptyState
+          section="hoy"
+          title="Hoy no tienes dosis programadas."
+          text="Aquí verás tus dosis de cada día, según los horarios de tus medicamentos."
+          action={{ href: "/medicamentos", label: "Ver mis medicamentos" }}
+        />
       ) : (
         <DoseList doses={doses} />
       )}
 
       {/* [PENDIENTE REVISIÓN PROFESIONAL] */}
-      <p className="mt-6 text-base text-ink-muted">
-        Si tienes dudas sobre una dosis, consulta a tu médico o farmacéutico.
-      </p>
+      <Notice kind="info">Si tienes dudas sobre una dosis, consulta a tu médico o farmacéutico.</Notice>
     </div>
   );
 }
