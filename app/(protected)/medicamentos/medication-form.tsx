@@ -3,7 +3,7 @@
 import { useActionState, useState } from "react";
 import { SubmitButton } from "@/components/submit-button";
 import { Notice } from "@/components/ui/notice";
-import { buttonPrimary, buttonSecondary, field, fieldLabel } from "@/components/ui/styles";
+import { buttonPrimary, buttonSecondary, enterFromAbove, field, fieldLabel } from "@/components/ui/styles";
 import { MEDICATION_ERROR_MESSAGES } from "@/lib/medication-messages";
 import { MAX_DOSAGE_LENGTH, MAX_NAME_LENGTH, MAX_TIMES } from "@/lib/medication-validation";
 import { createMedicationAction, type CreateMedicationState } from "./actions";
@@ -21,7 +21,9 @@ export function MedicationForm({ todayLocal, maxStartDate }: MedicationFormProps
     setTimes((current) => current.map((time, i) => (i === index ? value : time)));
   }
 
-  function removeTime(index: number) {
+  // Con keys por índice se desmonta la última fila, así que el input anterior sigue ahí para recibir el foco.
+  function removeTime(index: number, fieldset: Element | null) {
+    fieldset?.querySelectorAll<HTMLInputElement>('input[name="times"]')[index - 1]?.focus();
     setTimes((current) => current.filter((_, i) => i !== index));
   }
 
@@ -45,20 +47,26 @@ export function MedicationForm({ todayLocal, maxStartDate }: MedicationFormProps
       <fieldset className="flex min-w-0 flex-col gap-3">
         <legend className="mb-3 text-body text-ink">Horarios</legend>
         {times.map((time, index) => (
-          <div key={index} className="flex items-end gap-2">
+          // Las filas nuevas (index > 0) solo se montan al agregar: entran y reciben el foco.
+          <div key={index} className={`flex items-end gap-2 ${index > 0 ? enterFromAbove : ""}`}>
             <label className={`${fieldLabel} grow`}>
               Horario {index + 1}
               <input
                 className={field}
                 type="time"
                 name="times"
+                autoFocus={index > 0}
                 required={index === 0}
                 value={time}
                 onChange={(event) => updateTime(index, event.target.value)}
               />
             </label>
             {index > 0 ? (
-              <button type="button" onClick={() => removeTime(index)} className={`${buttonSecondary} min-h-13`}>
+              <button
+                type="button"
+                onClick={(event) => removeTime(index, event.currentTarget.closest("fieldset"))}
+                className={`${buttonSecondary} min-h-13`}
+              >
                 Quitar<span className="sr-only"> horario {index + 1}</span>
               </button>
             ) : null}

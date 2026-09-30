@@ -1,7 +1,7 @@
 // Variantes compartidas. Pine (accent) es el único color de acción. El estado presionado
 // (< 100 ms) es el feedback principal; la escala solo con motion-safe. El foco visible es global.
 const pressable =
-  "inline-flex items-center justify-center gap-2 rounded-control px-5 transition-[background-color,scale] duration-150 ease-out motion-safe:active:scale-[0.98] disabled:cursor-wait";
+  "inline-flex items-center justify-center gap-2 rounded-control px-5 transition-[background-color,scale] duration-150 ease-out-strong motion-safe:active:scale-[0.98] disabled:cursor-wait";
 
 export const buttonPrimary = `${pressable} min-h-13 bg-accent text-button text-accent-ink hover:bg-accent-strong active:bg-accent-strong`;
 
@@ -9,6 +9,10 @@ export const buttonSecondary = `${pressable} min-h-12 border-2 border-line-stron
 
 export const buttonQuiet =
   "inline-flex min-h-12 items-center gap-2 rounded-control px-3 text-secondary text-ink-muted underline underline-offset-4 transition-[background-color] duration-150 hover:bg-surface-muted active:bg-surface-muted";
+
+// Entrada al montarse (@starting-style): 4 px desde arriba + opacidad, 200 ms. Con reduced motion, solo opacidad.
+export const enterFromAbove =
+  "transition-[opacity,translate] duration-200 ease-out-strong starting:opacity-0 motion-safe:starting:-translate-y-1";
 
 // Enlace de texto en accent con objetivo de 48 px.
 export const textLink =

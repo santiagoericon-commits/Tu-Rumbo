@@ -49,7 +49,7 @@ export default async function MedicamentosPage() {
   }));
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 motion-safe:animate-screen-enter">
       <PageHeader section="medicamentos" title="Medicamentos" />
 
       {error ? (

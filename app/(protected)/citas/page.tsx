@@ -55,7 +55,7 @@ export default async function CitasPage() {
   const { upcoming, past } = partitionAppointments(appointments, now);
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 motion-safe:animate-screen-enter">
       <PageHeader section="citas" title="Citas" />
 
       <section aria-labelledby="citas-proximas" className="flex flex-col gap-4">

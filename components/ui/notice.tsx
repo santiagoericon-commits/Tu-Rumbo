@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { CircleCheckIcon, InfoIcon } from "@/components/icons";
+import { enterFromAbove } from "./styles";
 
 type NoticeProps = {
   kind: "error" | "success" | "info";
@@ -14,9 +15,11 @@ type NoticeProps = {
 export function Notice({ kind, children, className = "", announce = true }: NoticeProps) {
   const role = !announce ? undefined : kind === "error" ? "alert" : kind === "success" ? "status" : undefined;
   const Icon = kind === "success" ? CircleCheckIcon : InfoIcon;
+  // error y success entran (@starting-style); info es contenido estático y no se anima.
+  const enter = kind === "info" ? "" : enterFromAbove;
 
   return (
-    <div role={role} className={`flex gap-3 rounded-card bg-surface-muted p-4 text-body text-ink ${className}`}>
+    <div role={role} className={`flex gap-3 rounded-card bg-surface-muted p-4 text-body text-ink ${enter} ${className}`}>
       <Icon className="mt-0.5 size-6 text-ink" />
       <p className="min-w-0">{children}</p>
     </div>

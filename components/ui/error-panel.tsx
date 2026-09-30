@@ -18,7 +18,7 @@ type ErrorPanelProps = {
 // Nunca muestra error.message.
 export function ErrorPanel({ section, title, message, retry, children }: ErrorPanelProps) {
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 motion-safe:animate-screen-enter">
       <PageHeader section={section} title={title} size={section === "hoy" ? "greeting" : "title"} />
       <Notice kind="error">{message}</Notice>
       <button type="button" onClick={retry} className={`${buttonPrimary} w-full`}>

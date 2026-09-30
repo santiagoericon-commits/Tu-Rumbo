@@ -47,7 +47,7 @@ export default async function HoyPage() {
   }));
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 motion-safe:animate-screen-enter">
       <PageHeader section="hoy" title="Hoy" size="greeting" subtitle={formatLongDate(now, tz, now)} />
 
       {error ? (

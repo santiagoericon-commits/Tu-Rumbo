@@ -59,7 +59,7 @@ export default async function SintomasPage() {
   }));
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 motion-safe:animate-screen-enter">
       <PageHeader section="sintomas" title="Síntomas" subtitle={formatLongDate(now, tz, now)} />
 
       {error ? (

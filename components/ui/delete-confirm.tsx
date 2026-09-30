@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { SubmitButton } from "@/components/submit-button";
 import { Notice } from "./notice";
-import { buttonPrimary, buttonQuiet, buttonSecondary } from "./styles";
+import { buttonPrimary, buttonQuiet, buttonSecondary, enterFromAbove } from "./styles";
 
 type DeleteConfirmProps = {
   question: string;
@@ -39,7 +39,7 @@ export function DeleteConfirm({ question, itemName, failedMessage, onDelete }: D
       {confirming ? (
         <form
           action={remove}
-          className="mt-4 flex flex-col gap-3 rounded-control bg-surface-muted p-4 transition-[opacity,translate] duration-200 ease-out starting:opacity-0 motion-safe:starting:-translate-y-1"
+          className={`mt-4 flex flex-col gap-3 rounded-control bg-surface-muted p-4 ${enterFromAbove}`}
         >
           <p className="text-body text-ink">{question}</p>
           <SubmitButton pendingLabel="Eliminando…" className={`${buttonPrimary} w-full`}>
