@@ -36,10 +36,11 @@ Variables: solo `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Se
 | `proxy.ts` | Refresco de sesión (`@supabase/ssr`, Next 16) y redirección de rutas protegidas. **Protegido** |
 | `lib/supabase/server.ts`, `lib/supabase/client.ts` | Clientes de Supabase servidor/navegador. **Protegidos** |
 | `app/auth-actions.ts` | Login, registro, logout (Server Actions). **Protegido** |
-| `app/(protected)/layout.tsx` | Segunda capa de auth + header/nav |
+| `app/(protected)/layout.tsx` | Segunda capa de auth + shell: enlace "Saltar al contenido", `TopBar`, `<main id="contenido">`, `TabBar` |
 | `app/(protected)/{hoy,medicamentos,citas,sintomas}/page.tsx` | Pantallas del MVP |
 | `app/layout.tsx` | Root layout con footer "Rumbo no sustituye la atención médica." (**no quitar**) |
 | `app/manifest.ts`, `public/sw.js`, `app/service-worker-register.tsx` | PWA |
+| `app/icon.svg`, `app/apple-icon.png`, `public/icons/*.png`, `scripts/generate-icons.mjs` | Marca (aguja de brújula): favicon SVG y PNG de PWA generados una vez con el `sharp` de `next` (`node scripts/generate-icons.mjs`) |
 | `supabase/migrations/` | Esquema. **Nunca editar una migración aplicada**; crear una nueva |
 | `lib/auth-messages.ts`, `lib/auth-validation.ts` | Diccionario cerrado de mensajes de auth y validación de credenciales |
 | `lib/timezone.ts` | Zona del usuario: `DEFAULT_TZ` (America/Mazatlan), `TIME_ZONE_PATTERN`, `isValidTimeZone`, `resolveTimeZone`. Puro (lo usa también el cliente) |
@@ -57,10 +58,14 @@ Variables: solo `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Se
 | `lib/appointment-list.ts` | `partitionAppointments`: próximas (≥ ahora, ascendente) y anteriores (la más reciente primero) |
 | `lib/dose-status.ts`, `lib/dose-summary.ts` | Validación de la acción de dosis (UUID + taken/pending, nunca missed) y texto del resumen de `/hoy` |
 | `app/(protected)/medicamentos/{actions,medication-form,medication-item}.tsx` | Alta (inserta medicamento + dosis; si fallan las dosis borra el medicamento) y eliminación con confirmación |
-| `app/(protected)/sintomas/` | Registro diario: upsert por `(user_id, log_date)` con `log_date` calculado en servidor; 5 opciones del mismo color; historial de 14 días; `safety-note.tsx` (línea estática del 911, también en `error.tsx`) |
+| `app/(protected)/sintomas/` | Registro diario: upsert por `(user_id, log_date)` con `log_date` calculado en servidor; escala con palabras en `level-labels.ts` (Nada a Mucho, "n de 5", plum sin colores por valor); historial de 14 días con chip; `safety-note.tsx` (línea estática del 911, también en `error.tsx`) |
 | `app/(protected)/citas/` | Alta con fecha y hora locales (`localDateTimeToInstant`), próximas/anteriores y eliminación con confirmación |
 | `components/time-zone-sync.tsx` | Escribe la cookie `tz` desde el navegador y hace un solo `router.refresh()` si cambió |
-| `components/submit-button.tsx` | Botón de envío compartido con `useFormStatus` |
+| `components/submit-button.tsx` | Botón de envío compartido con `useFormStatus`; la variante llega por `className` |
+| `components/ui/` | `styles.ts` (buttonPrimary, buttonSecondary, buttonQuiet, textLink, field, fieldLabel, card, cardTitle), `page-header`, `notice` (error=alert, success=status, info sin role), `empty-state`, `delete-confirm`, `error-panel`, `skeletons` |
+| `components/app-shell/` | `sections.ts` (fuente única de las 4 secciones: ruta, pestaña, ícono, tinte), `top-bar`, `tab-bar` (`data-app-tabbar`, `aria-current`), `auth-frame` (login y registro) |
+| `components/icons.tsx`, `components/rumbo-mark.tsx` | Íconos de interfaz (paths de Lucide, ISC) y la marca con tokens |
+| `docs/diseno.md`, `docs/fuentes.md` | Sistema de diseño (semilla de la skill `rumbo-diseno`) y fuentes de copy con contenido de salud |
 
 ## Patrones obligatorios
 
@@ -72,7 +77,7 @@ Variables: solo `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Se
 - Tras mutar, revalidar con la API vigente de Next 16. Verificar APIs contra la documentación de la versión instalada, no de memoria.
 - Estados de carga, error y vacío en toda pantalla con datos.
 - Sin `any`. Componentes < ~150 líneas; lógica pura en `lib/`.
-- Tailwind con tokens en `@theme` de `app/globals.css`; nada de colores hardcodeados en `style=`. Tokens semánticos: `surface`, `surface-muted`, `ink`, `ink-muted`, `line`, `accent`, `accent-ink` (valores neutros provisionales; P6 los cambia). Pantallas nuevas usan solo estos tokens, sin `zinc-*`/`green-*`.
+- Tailwind con tokens en `@theme` de `app/globals.css`; nada de colores hardcodeados en `className` ni `style=`. Sistema completo en `docs/diseno.md`. Color: `canvas`, `surface`, `surface-muted`, `ink`, `ink-muted`, `line` (solo separadores), `line-strong` (bordes de controles), `accent`, `accent-strong`, `accent-ink`, `sage`/`sage-soft` (decorativos) y `coral`/`sky`/`plum` `-ink`/`-tint` (identidad de sección). Texto: `text-greeting`, `title`, `subtitle`, `time`, `name`, `body` (18 px, por defecto), `button`, `secondary`, `tab`. Radios `rounded-card`/`rounded-control`, sombra `shadow-card`. Pantallas nuevas usan solo estos tokens y las variantes de `components/ui/styles.ts`, sin `zinc-*`/`green-*`/`red-*`.
 
 ## Tiempo (crítico)
 
@@ -119,7 +124,7 @@ Los síntomas se registran, no se evalúan. Sin umbrales, sin colores de alarma 
 | "Cura", "libre de cáncer", "evita la recaída" | "te ayuda a llevar el registro de tu tratamiento" |
 | "Diagnóstico", "evaluación" | "registro", "seguimiento" |
 | "Alerta" (v1) | "recordatorio" |
-| "Gravedad", "severidad" | "¿Qué tanto te molestó hoy?" (1 = poco, 5 = mucho) |
+| "Gravedad", "severidad", "Molestia: 3 de 5" | "¿Qué tanto te molestaron los síntomas hoy?": Nada, Un poco, Algo, Bastante, Mucho, cada una con "n de 5" (fuente y límites en `docs/fuentes.md`) |
 
 Línea estática propuesta para `/sintomas` (pendiente de revisión profesional): "Si algo te preocupa, comunícate con tu equipo médico. En una emergencia, llama al 911."
 
@@ -128,9 +133,11 @@ Tono: español de México, sereno, cálido, sin culpa, sin dramatismo. Hablarle 
 ## UI
 
 - 390px primero (modo dispositivo de DevTools; Chrome no deja la ventana tan angosta) y teléfono real. Objetivos táctiles ≥ 44px, texto base ≥ 16px, contraste AA, `label` en todo input.
-- iOS: las notificaciones push de una PWA solo funcionan si la app está instalada en la pantalla de inicio; el onboarding debe explicarlo cuando exista push (v2). Para iOS hace falta `app/apple-icon.png`.
+- iOS: las notificaciones push de una PWA solo funcionan si la app está instalada en la pantalla de inicio; el onboarding debe explicarlo cuando exista push (v2). `app/apple-icon.png` existe desde P6 (se regenera con `scripts/generate-icons.mjs`).
 - Modo oscuro: soportado completo con tokens o forzado a claro con `color-scheme: light`. Nunca a medias.
-- Dirección visual: la del mockup del equipo (Source Serif 4 + Inter vía `next/font`, fondo blanco, sage/pine, acentos pine/coral/sky/plum). Coral nunca para síntomas.
+- Dirección visual (P6, detalle en `docs/diseno.md`): fondo crema (`canvas`) con tarjetas blancas, Source Serif 4 solo en títulos e Inter 18 px en el cuerpo (`next/font`), marca de aguja de brújula, shell con barra inferior de 4 pestañas.
+- Reglas de acento: pine (`accent`) es el único color de acción, foco y pestaña activa. Coral, sky y plum son solo identidad de sección (Medicamentos, Citas, Síntomas): ícono, tinte del encabezado y estado vacío, y en Síntomas la escala y el chip. Nunca en botones, errores, eliminar ni estados. Coral nunca para síntomas. Estados (pendiente/tomada, error/éxito) por ícono y texto, nunca por color.
+- La barra inferior es fija: `data-app-tabbar` reserva su alto en el body y como `scroll-padding-bottom`. Una pantalla nueva no necesita hacer nada extra, pero debe verificarse que el footer quede visible al final del scroll.
 
 ## Forma de trabajo
 
@@ -163,12 +170,12 @@ Cambios en archivos protegidos, `app/(protected)/layout.tsx`, migraciones o lóg
 - Aislamiento de citas y síntomas (P5, 30 sept 2026): como `authenticated` con la cuenta de pruebas contra filas ficticias de la demo, `13/13` (no ve, no modifica, no borra, no inserta a su nombre; el upsert sobre el registro de la demo da `insufficient_privilege`), con rollback.
 - Prueba de dos cuentas contra el Supabase real (`supabase/verify-cross-user.sql`): `RESULTADO: 9/9 pruebas OK` el 30 sept 2026, tras la migración `20260930041030` (la prueba 9 ahora espera `permission denied` para `anon`). Repetir tras cada migración.
 - Auth (demo): Confirm email desactivado, registro cerrado, 2 cuentas demo creadas desde el dashboard, solo datos ficticios.
+- Pase visual (P6, 30 sept 2026, rama `feat/pase-visual`): tokens definitivos, Inter + Source Serif 4, marca e íconos PWA en PNG, shell con barra superior y barra inferior de 4 pestañas ("Medicinas" en la pestaña, D1), login y registro rediseñados, las 4 pantallas con PageHeader por sección, tarjetas, avisos neutros, estados vacío/carga/error y escala de síntomas con palabras (D2). Solo presentación: lógica, acciones y `lib/**` sin cambios (salvo un comentario); 206 tests en verde. Sistema en `docs/diseno.md`.
 
 Hallazgos abiertos:
 - **AUTH-01**: Confirm email desactivado y registro cerrado durante la demo (cuentas creadas desde el dashboard). Antes de usuarios reales: reabrir el registro solo con Confirm email activo, crear la ruta de confirmación (exchangeCodeForSession o verifyOtp) y configurar SMTP propio; con Confirm email desactivado se puede saber si un correo tiene cuenta.
 - **AUTH-02**: protección de contraseñas filtradas (HaveIBeenPwned) desactivada; requiere plan Pro de Supabase.
 - **DB-02**: sin trigger de creación de `profiles`.
-- **PWA-01**: falta `app/apple-icon.png` (iOS no usa los SVG del manifest).
 - **SCHED-01**: cada medicamento genera dosis solo para 14 días desde su fecha de inicio; después deja de aparecer en /hoy. Antes de usuarios reales: generación continua (por ejemplo, extender la ventana al abrir /hoy o con un job programado).
 
-Cerrados: **SEC-01** (mensajes por código y validación en servidor) y **UI-01** (modo claro forzado; modo oscuro completo post-presentación) en fix/base-segura; **DB-01** (`doses.medication_id` NOT NULL) y **DB-03** (sin grants para `anon`; `authenticated` solo SELECT/INSERT/UPDATE/DELETE) en la migración `20260930041030` de feat/medicamentos.
+Cerrados: **SEC-01** (mensajes por código y validación en servidor) y **UI-01** (modo claro forzado; modo oscuro completo post-presentación) en fix/base-segura; **DB-01** (`doses.medication_id` NOT NULL) y **DB-03** (sin grants para `anon`; `authenticated` solo SELECT/INSERT/UPDATE/DELETE) en la migración `20260930041030` de feat/medicamentos; **PWA-01** (`app/apple-icon.png` y PNG 192/512/maskable en el manifest) en feat/pase-visual.
