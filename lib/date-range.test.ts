@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatDayHeading, formatTime, getDayRange } from "@/lib/date-range";
+import { formatDayHeading, formatLongDate, formatTime, getDayRange } from "@/lib/date-range";
 
 const MZT = "America/Mazatlan";
 const CDMX = "America/Mexico_City";
@@ -113,5 +113,31 @@ describe("formatDayHeading", () => {
     expect(formatDayHeading(at("2026-09-30T06:30:00Z"), CDMX)).toBe(
       "Hoy, miércoles, 30 de septiembre",
     );
+  });
+});
+
+describe("formatLongDate", () => {
+  const NOW = at("2026-09-29T20:00:00Z");
+
+  it("día de la semana, día y mes en la zona del usuario, sin año si es el año en curso", () => {
+    expect(formatLongDate(at("2026-10-06T17:30:00Z"), MZT, NOW)).toBe("martes, 6 de octubre");
+  });
+
+  it("una cita a las 23:30 locales conserva su día aunque en UTC ya sea el siguiente", () => {
+    expect(formatLongDate(at("2026-10-01T06:30:00Z"), MZT, NOW)).toBe("miércoles, 30 de septiembre");
+  });
+
+  it("una cita a las 00:15 locales ya es del día nuevo", () => {
+    expect(formatLongDate(at("2026-10-01T07:15:00Z"), MZT, NOW)).toBe("jueves, 1 de octubre");
+  });
+
+  it("agrega el año cuando no es el año local en curso", () => {
+    expect(formatLongDate(at("2027-10-05T17:00:00Z"), MZT, NOW)).toBe("martes, 5 de octubre de 2027");
+    expect(formatLongDate(at("2025-12-15T17:00:00Z"), MZT, NOW)).toBe("lunes, 15 de diciembre de 2025");
+  });
+
+  it("compara años locales: el 31 de diciembre local no lleva año aunque en UTC ya sea 2027", () => {
+    const newYearsEve = at("2027-01-01T05:00:00Z"); // 31 dic 2026, 10:00 p.m. en Mazatlán
+    expect(formatLongDate(newYearsEve, MZT, NOW)).toBe("jueves, 31 de diciembre");
   });
 });

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatScheduleTimes, formatStartDate } from "@/lib/schedule-format";
+import { formatCalendarDate, formatScheduleTimes, formatStartDate } from "@/lib/schedule-format";
 
 // Intl puede separar la hora de "a.m." con espacio normal, no separable o fino
 // no separable según la versión de ICU.
@@ -37,5 +37,15 @@ describe("formatStartDate", () => {
 
   it("no depende de la zona del servidor", () => {
     expect(formatStartDate("2027-01-01")).toBe("Desde el viernes, 1 de enero");
+  });
+});
+
+describe("formatCalendarDate", () => {
+  it("día de la semana, día y mes de una fecha de calendario", () => {
+    expect(formatCalendarDate("2026-09-29")).toBe("martes, 29 de septiembre");
+  });
+
+  it("no depende de la zona del servidor ni se recorre al día anterior", () => {
+    expect(formatCalendarDate("2026-10-01")).toBe("jueves, 1 de octubre");
   });
 });

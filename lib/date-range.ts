@@ -27,6 +27,20 @@ export function formatTime(date: Date, tz: string): string {
   }).format(date);
 }
 
+// "martes, 6 de octubre" en la zona del usuario; con "de 2027" si el año local
+// del instante no es el año local de `now`.
+export function formatLongDate(date: Date, tz: string, now: Date): string {
+  const zone = resolveTimeZone(tz);
+  const withYear = localParts(date, zone).year !== localParts(now, zone).year;
+  return new Intl.DateTimeFormat("es-MX", {
+    timeZone: zone,
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    ...(withYear ? { year: "numeric" } : {}),
+  }).format(date);
+}
+
 export function formatDayHeading(date: Date, tz: string): string {
   const day = new Intl.DateTimeFormat("es-MX", {
     timeZone: resolveTimeZone(tz),

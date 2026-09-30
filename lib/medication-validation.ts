@@ -6,7 +6,7 @@ export const MAX_DOSAGE_LENGTH = 60;
 export const MAX_TIMES = 4;
 export const MAX_START_OFFSET_DAYS = 365;
 
-const TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
+export const TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 const DAY_MS = 24 * 60 * 60 * 1000;
 

@@ -29,8 +29,13 @@ export function formatScheduleTimes(times: string[]): string {
   return listFormatter.format(times.map(formatClockTime));
 }
 
+// "2026-09-29" -> "martes, 29 de septiembre"
+export function formatCalendarDate(date: string): string {
+  const [year, month, day] = date.split("-").map(Number);
+  return dateFormatter.format(new Date(Date.UTC(year, month - 1, day)));
+}
+
 // "2026-09-29" -> "Desde el martes, 29 de septiembre"
 export function formatStartDate(date: string): string {
-  const [year, month, day] = date.split("-").map(Number);
-  return `Desde el ${dateFormatter.format(new Date(Date.UTC(year, month - 1, day)))}`;
+  return `Desde el ${formatCalendarDate(date)}`;
 }

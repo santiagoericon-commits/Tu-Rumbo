@@ -45,13 +45,20 @@ Variables: solo `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Se
 | `lib/timezone.ts` | Zona del usuario: `DEFAULT_TZ` (America/Mazatlan), `TIME_ZONE_PATTERN`, `isValidTimeZone`, `resolveTimeZone`. Puro (lo usa también el cliente) |
 | `lib/timezone.server.ts` | `getUserTimeZone()`: lee la cookie `tz` en el servidor y la resuelve |
 | `lib/local-time.ts` | Primitivas de hora local: `localParts`, `offsetMs`, `formatLocalDate` ("YYYY-MM-DD"), `addDaysIso`, `localDateTimeToInstant` (hora repetida → primera ocurrencia; hora inexistente → se recorre hacia adelante). Solo `Intl`. Solo cambia con tests |
-| `lib/date-range.ts` | `getDayRange(tz, now)`, `formatTime`, `formatDayHeading`. Solo `Intl`. Lógica de tiempo: solo cambia con tests |
+| `lib/date-range.ts` | `getDayRange(tz, now)`, `formatTime`, `formatDayHeading`, `formatLongDate` ("martes, 6 de octubre"; con año si no es el año local en curso). Solo `Intl`. Lógica de tiempo: solo cambia con tests |
 | `lib/dose-schedule.ts` | `generateDoseInstants`: dosis de 14 días desde la fecha de inicio, en la zona del usuario, nunca en el pasado. Solo cambia con tests |
 | `lib/medication-validation.ts`, `lib/medication-messages.ts` | Validación en servidor del formulario de medicamento (nombre 1–80, dosis ≤ 60, 1–4 horarios HH:MM, inicio hoy..+365) y diccionario cerrado de sus errores |
-| `lib/schedule-format.ts` | Texto de horarios ("8:00 a.m. y 8:00 p.m.") y de fecha de inicio ("Desde el martes, 29 de septiembre") |
+| `lib/schedule-format.ts` | Texto de horarios ("8:00 a.m. y 8:00 p.m."), de fecha de calendario (`formatCalendarDate`: "martes, 29 de septiembre") y de fecha de inicio ("Desde el martes, 29 de septiembre") |
 | `lib/ids.ts` | `isUuid` |
+| `lib/form-text.ts` | `normalizeMultiline`: el textarea envía `
+` pero `maxLength` cuenta uno; se normaliza antes de medir |
+| `lib/symptom-validation.ts`, `lib/symptom-messages.ts` | Validación del registro diario (valor `"1"`–`"5"`, notas ≤ 500) y diccionario cerrado de errores + aviso de guardado |
+| `lib/appointment-validation.ts`, `lib/appointment-messages.ts` | Validación de la cita (título 1–80, fecha hoy..+730, hora HH:MM, notas ≤ 300) y diccionario cerrado de errores |
+| `lib/appointment-list.ts` | `partitionAppointments`: próximas (≥ ahora, ascendente) y anteriores (la más reciente primero) |
 | `lib/dose-status.ts`, `lib/dose-summary.ts` | Validación de la acción de dosis (UUID + taken/pending, nunca missed) y texto del resumen de `/hoy` |
 | `app/(protected)/medicamentos/{actions,medication-form,medication-item}.tsx` | Alta (inserta medicamento + dosis; si fallan las dosis borra el medicamento) y eliminación con confirmación |
+| `app/(protected)/sintomas/` | Registro diario: upsert por `(user_id, log_date)` con `log_date` calculado en servidor; 5 opciones del mismo color; historial de 14 días; `safety-note.tsx` (línea estática del 911, también en `error.tsx`) |
+| `app/(protected)/citas/` | Alta con fecha y hora locales (`localDateTimeToInstant`), próximas/anteriores y eliminación con confirmación |
 | `components/time-zone-sync.tsx` | Escribe la cookie `tz` desde el navegador y hace un solo `router.refresh()` si cambió |
 | `components/submit-button.tsx` | Botón de envío compartido con `useFormStatus` |
 
@@ -150,7 +157,10 @@ Cambios en archivos protegidos, `app/(protected)/layout.tsx`, migraciones o lóg
 - Supabase: migraciones `20260922171500`, `20260922230000` y `20260930041030` aplicadas. Historial reparado el 28 sept 2026 (las dos primeras estaban registradas con otras versiones; SQL idéntico). Desde P4, migraciones con el procedimiento de "Esquema (reglas)".
 - `/hoy` (P3): dosis del día en la zona del usuario (cookie `tz`, fallback America/Mazatlan), ordenadas; marcar como tomada y deshacer con `useOptimistic` + `useFormStatus`; resumen neutro; estados vacío, carga y error.
 - `/medicamentos` (P4): lista (nombre, dosis, horarios en 12 h, "Desde el…"), alta con 1 a 4 horarios y fecha de inicio (redirige a `/hoy`), eliminación con confirmación (cascade a sus dosis); estados vacío, carga y error. 150 tests de Vitest (zonas, 23:30/00:15, Tijuana 23 h/25 h y horas inexistente/repetida, ventana de 14 días, validación, formato 12 h, auth).
-- Placeholder: `/citas`, `/sintomas`.
+- `/sintomas` (P5): un registro por día en la zona del usuario (upsert; precargado si ya existe), "¿Qué tanto te molestó hoy?" 1 a 5 sin colores por valor, notas ≤ 500, historial cronológico de 14 días, línea estática del 911 siempre visible; estados vacío, carga y error (con error de consulta no se muestra el formulario para no sobrescribir el registro de hoy).
+- `/citas` (P5): alta (título, fecha y hora locales, notas ≤ 300), próximas ascendentes con fecha larga y hora 12 h, "Anteriores" discreta, eliminación con confirmación; estados vacío, carga y error. 206 tests de Vitest.
+- Los formularios guardan en el cliente lo enviado para recuperarlo si la acción falla (React 19 reinicia el formulario al terminar); el estado de `useActionState` solo lleva `status` y `code`, porque viaja al servidor en el siguiente envío.
+- Aislamiento de citas y síntomas (P5, 30 sept 2026): como `authenticated` con la cuenta de pruebas contra filas ficticias de la demo, `13/13` (no ve, no modifica, no borra, no inserta a su nombre; el upsert sobre el registro de la demo da `insufficient_privilege`), con rollback.
 - Prueba de dos cuentas contra el Supabase real (`supabase/verify-cross-user.sql`): `RESULTADO: 9/9 pruebas OK` el 30 sept 2026, tras la migración `20260930041030` (la prueba 9 ahora espera `permission denied` para `anon`). Repetir tras cada migración.
 - Auth (demo): Confirm email desactivado, registro cerrado, 2 cuentas demo creadas desde el dashboard, solo datos ficticios.
 
