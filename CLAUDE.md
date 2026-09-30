@@ -13,13 +13,15 @@ Fase actual: prototipo para presentación del **miércoles 30 sept 2026**. Solo 
 ## Stack y comandos
 
 - Next.js 16 (App Router) · React 19 · TypeScript estricto · Tailwind v4 · Supabase (`@supabase/ssr`)
-- Mac + zsh. Dev en `http://localhost:3000`.
+- PC con Windows (PowerShell o Git Bash). Node 22 fijado con `.node-version` (fnm). Dev en `http://localhost:3000`.
 
 ```bash
 npm run dev
 npm run lint && npm run build   # verificación estándar (build = chequeo de tipos)
-npm test                        # Vitest 4.1.11 (fijo; Vitest 5 pide Node 22) con TZ=UTC, tests en lib/**/*.test.ts
+npm test                        # Vitest 4.1.11 (fijo; Vitest 5 pide Node 22), tests en lib/**/*.test.ts
 ```
+
+`npm test` ya corre en UTC en cualquier sistema (`process.env.TZ` en `vitest.config.mts`; `lib/tz-guard.test.ts` falla si no). Dev server en UTC: PowerShell `$env:TZ="UTC"; npm run dev` · Git Bash `TZ=UTC npm run dev`.
 
 Docs de Next de la versión instalada: `node_modules/next/dist/docs`. Consultarlas antes de usar una API de Next.
 
@@ -127,7 +129,9 @@ Tono: español de México, sereno, cálido, sin culpa, sin dramatismo. Hablarle 
 8. Reportar pass/fail, archivos tocados, suposiciones, diferidos y preguntas en lista.
 9. Un commit por tarea (salvo excepción declarada en el prompt). `git add -p` para cambios mezclados. **Nunca push sin confirmación de Rafa.**
 
-Worktrees: cada sesión corre en un worktree de la app (`.claude/worktrees/`, rama `claude/...` que se renombra al empezar a implementar). `.env.local` no viaja: se copia a mano en cada worktree nuevo. El merge y el push de un prompt van antes de abrir la sesión del siguiente.
+Entorno: el principal es la PC con Windows. Claude Code corre en la terminal de Cursor, sin worktrees: rama nueva en el checkout con `main` limpio. Nunca auto mode: Plan Mode para inspeccionar y planear, modo normal para implementar. Nunca `git push` sin confirmación de Rafa.
+
+Worktrees (solo en la app de escritorio de Claude): cada sesión corre en un worktree de la app (`.claude/worktrees/`, rama `claude/...` que se renombra al empezar a implementar). `.env.local` no viaja: se copia a mano en cada worktree nuevo. El merge y el push de un prompt van antes de abrir la sesión del siguiente.
 
 Cambios en archivos protegidos, `app/(protected)/layout.tsx`, migraciones o lógica de tiempo: Plan Mode + `/security-review` antes del commit. En el layout protegido se conserva siempre `getUser()` + `redirect("/login")`.
 
