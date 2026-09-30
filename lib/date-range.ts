@@ -1,43 +1,5 @@
+import { localParts, offsetMs } from "@/lib/local-time";
 import { resolveTimeZone } from "@/lib/timezone";
-
-type LocalParts = {
-  year: number;
-  month: number;
-  day: number;
-  hour: number;
-  minute: number;
-  second: number;
-};
-
-function localParts(instant: Date, tz: string): LocalParts {
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: tz,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hourCycle: "h23",
-  }).formatToParts(instant);
-  const get = (type: Intl.DateTimeFormatPartTypes) =>
-    Number(parts.find((part) => part.type === type)?.value);
-  return {
-    year: get("year"),
-    month: get("month"),
-    day: get("day"),
-    hour: get("hour"),
-    minute: get("minute"),
-    second: get("second"),
-  };
-}
-
-// Diferencia entre la hora de pared de la zona y UTC en ese instante.
-function offsetMs(instant: number, tz: string): number {
-  const whole = Math.floor(instant / 1000) * 1000;
-  const p = localParts(new Date(whole), tz);
-  return Date.UTC(p.year, p.month - 1, p.day, p.hour, p.minute, p.second) - whole;
-}
 
 // Instante UTC de la medianoche local. Date.UTC normaliza el desborde de día, mes y año.
 function startOfLocalDay(year: number, month: number, day: number, tz: string): Date {

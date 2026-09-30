@@ -25,7 +25,8 @@ begin
 
   -- Como A: datos propios
   perform set_config('request.jwt.claims', json_build_object('sub', user_a, 'role', 'authenticated')::text, true);
-  insert into medications (id, user_id, name) values (med_a, user_a, 'Medicamento de prueba');
+  insert into medications (id, user_id, name, schedule_times, start_date)
+    values (med_a, user_a, 'Medicamento de prueba', array['08:00'::time], current_date);
   insert into doses (user_id, medication_id, scheduled_at) values (user_a, med_a, now());
   insert into appointments (user_id, scheduled_at, title) values (user_a, now() + interval '7 days', 'Cita de prueba');
   insert into symptom_logs (user_id, log_date, severity) values (user_a, current_date - 3650, 2);
@@ -52,7 +53,9 @@ begin
 
   -- 6. B no puede insertar filas a nombre de A (RLS with check)
   begin
-    insert into medications (user_id, name) values (user_b, 'x'), (user_a, 'Intruso');
+    insert into medications (user_id, name, schedule_times, start_date)
+      values (user_b, 'x', array['08:00'::time], current_date),
+             (user_a, 'Intruso', array['08:00'::time], current_date);
     raise exception 'FALLO 6: B insertó un medicamento a nombre de A';
   exception when insufficient_privilege then null;
   end;
@@ -65,11 +68,16 @@ begin
   get diagnostics n = row_count;
   if n <> 0 then raise exception 'FALLO 8: B borró un medicamento de A'; end if;
 
-  -- 9. Un visitante sin sesión (anon) no ve nada
+  -- 9. Un visitante sin sesión (anon) no ve nada. Desde la migración de P4, anon no
+  --    tiene grants: lo esperado es "permission denied" (insufficient_privilege).
+  --    Solo se atrapa ese error; si anon lograra leer y contara filas, sigue siendo FALLO.
   perform set_config('request.jwt.claims', '', true);
   perform set_config('role', 'anon', true);
-  select count(*) into n from doses;
-  if n <> 0 then raise exception 'FALLO 9: anon ve dosis'; end if;
+  begin
+    select count(*) into n from doses;
+    if n <> 0 then raise exception 'FALLO 9: anon ve dosis'; end if;
+  exception when insufficient_privilege then null;
+  end;
 
   raise exception 'RESULTADO: 9/9 pruebas OK. Error intencional para deshacer los datos de prueba.';
 end $$;

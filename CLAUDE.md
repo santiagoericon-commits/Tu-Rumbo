@@ -44,11 +44,16 @@ Variables: solo `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Se
 | `lib/auth-messages.ts`, `lib/auth-validation.ts` | Diccionario cerrado de mensajes de auth y validación de credenciales |
 | `lib/timezone.ts` | Zona del usuario: `DEFAULT_TZ` (America/Mazatlan), `TIME_ZONE_PATTERN`, `isValidTimeZone`, `resolveTimeZone`. Puro (lo usa también el cliente) |
 | `lib/timezone.server.ts` | `getUserTimeZone()`: lee la cookie `tz` en el servidor y la resuelve |
+| `lib/local-time.ts` | Primitivas de hora local: `localParts`, `offsetMs`, `formatLocalDate` ("YYYY-MM-DD"), `addDaysIso`, `localDateTimeToInstant` (hora repetida → primera ocurrencia; hora inexistente → se recorre hacia adelante). Solo `Intl`. Solo cambia con tests |
 | `lib/date-range.ts` | `getDayRange(tz, now)`, `formatTime`, `formatDayHeading`. Solo `Intl`. Lógica de tiempo: solo cambia con tests |
+| `lib/dose-schedule.ts` | `generateDoseInstants`: dosis de 14 días desde la fecha de inicio, en la zona del usuario, nunca en el pasado. Solo cambia con tests |
+| `lib/medication-validation.ts`, `lib/medication-messages.ts` | Validación en servidor del formulario de medicamento (nombre 1–80, dosis ≤ 60, 1–4 horarios HH:MM, inicio hoy..+365) y diccionario cerrado de sus errores |
+| `lib/schedule-format.ts` | Texto de horarios ("8:00 a.m. y 8:00 p.m.") y de fecha de inicio ("Desde el martes, 29 de septiembre") |
+| `lib/ids.ts` | `isUuid` |
 | `lib/dose-status.ts`, `lib/dose-summary.ts` | Validación de la acción de dosis (UUID + taken/pending, nunca missed) y texto del resumen de `/hoy` |
+| `app/(protected)/medicamentos/{actions,medication-form,medication-item}.tsx` | Alta (inserta medicamento + dosis; si fallan las dosis borra el medicamento) y eliminación con confirmación |
 | `components/time-zone-sync.tsx` | Escribe la cookie `tz` desde el navegador y hace un solo `router.refresh()` si cambió |
 | `components/submit-button.tsx` | Botón de envío compartido con `useFormStatus` |
-| `lib/dose-schedule.ts` | (por crear) Generación de dosis a partir de la frecuencia. Solo cambia con tests |
 
 ## Patrones obligatorios
 
@@ -66,19 +71,22 @@ Variables: solo `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Se
 
 El servidor corre en UTC. "Hoy" y las horas de dosis se calculan en la zona del usuario: `Intl.DateTimeFormat().resolvedOptions().timeZone` del navegador (cookie o `profiles`), fallback `America/Mazatlan`. En DB todo es `timestamptz`. Tests obligatorios: dosis 23:30 y 00:15, día UTC distinto al local, varias dosis al día, zona distinta al fallback, Tijuana en cambio de horario.
 
-La Mac de desarrollo está en hora de Mazatlán y oculta bugs: tests con `TZ=UTC` y verificación visual de lógica de tiempo con `TZ=UTC npm run dev`, más una revisión en el preview de Vercel.
+La PC de desarrollo está en hora de Mazatlán y oculta bugs: `npm test` ya corre en UTC; la verificación visual de lógica de tiempo va con el dev server en UTC (PowerShell `$env:TZ="UTC"; npm run dev` · Git Bash `TZ=UTC npm run dev`), más una revisión en el preview de Vercel.
+
+Horarios de medicamento: hora de pared local (`medications.schedule_times time[]`) + fecha local de inicio (`start_date date`); las dosis se generan como instantes UTC con `lib/dose-schedule.ts`. Cambio de horario: hora repetida → primera ocurrencia; hora inexistente → se recorre hacia adelante (02:30 → 03:30).
 
 Horas en 12 h como las da `Intl` es-MX ("8:05 a.m."). Una dosis pendiente de ayer no aparece en "hoy". La app nunca asigna `missed`; si existe, se muestra como pendiente.
 
 ## Esquema (reglas)
 
-- Toda tabla nueva: RLS habilitado.
+- Toda tabla nueva: RLS habilitado **y** revocar `ALL` a `anon` y `TRUNCATE, REFERENCES, TRIGGER` a `authenticated` (los privilegios por defecto de Supabase se los dan a cada tabla nueva).
 - Relación entre tablas del mismo usuario: **FK compuesta `(id, user_id)`** (las FK no aplican RLS).
 - Políticas solo `to authenticated`, con `(select auth.uid())`.
 - Índices en las columnas que filtra RLS.
 - Migración nueva `YYYYMMDDHHMMSS_descripcion.sql`. **Mostrar el SQL completo y esperar aprobación antes de escribirlo o correrlo.** Nunca `supabase db push` sin aprobación.
+- Procedimiento (evita desalinear el historial): aplicar con `apply_migration` del MCP → `list_migrations` → crear el archivo local con la versión exacta que registró y el mismo SQL. Nunca nombrar el archivo antes de aplicar.
 
-Tablas: `profiles` (sin trigger de creación), `medications`, `doses` (FK compuesta a `medications`, `status` pending/taken/missed), `appointments`, `symptom_logs` (`log_date` único por usuario, `severity` 1 a 5 de autorreporte).
+Tablas: `profiles` (sin trigger de creación), `medications` (`schedule_times time[]` de 1 a 4, `start_date date`), `doses` (FK compuesta a `medications`, `medication_id` NOT NULL, `status` pending/taken/missed), `appointments`, `symptom_logs` (`log_date` único por usuario, `severity` 1 a 5 de autorreporte).
 
 ## Privacidad y seguridad
 
@@ -135,22 +143,22 @@ Worktrees (solo en la app de escritorio de Claude): cada sesión corre en un wor
 
 Cambios en archivos protegidos, `app/(protected)/layout.tsx`, migraciones o lógica de tiempo: Plan Mode + `/security-review` antes del commit. En el layout protegido se conserva siempre `getUser()` + `redirect("/login")`.
 
-## Estado (29 sept 2026)
+## Estado (30 sept 2026)
 
-- Hecho: scaffold, auth, `proxy.ts`, PWA base, 2 migraciones (RLS + FK compuesta), base segura (P1). Lint y build en verde.
+- Hecho: scaffold, auth, `proxy.ts`, PWA base, 3 migraciones (RLS + FK compuesta + programación/grants), base segura (P1). Lint y build en verde.
 - Deploy: Vercel `https://rumbo-livid.vercel.app` (proyecto `rumbo`, Node 22.x), conectado al repo de GitHub; los merges a `main` van a producción (por confirmar en el primer merge). Producción pública; previews y URLs de deployment piden login de Vercel (Standard Protection). Variables en Production y Preview: solo `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
-- Supabase: migraciones `20260922171500` y `20260922230000` aplicadas. Historial reparado el 28 sept 2026: estaban registradas con otras versiones (se aplicaron con `apply_migration` del MCP) y el SQL era idéntico. Migraciones nuevas: nunca con `apply_migration` del MCP.
-- `/hoy` (P3): dosis del día en la zona del usuario (cookie `tz`, fallback America/Mazatlan), ordenadas; marcar como tomada y deshacer con `useOptimistic` + `useFormStatus`; resumen neutro; estados vacío, carga y error. 82 tests de Vitest (zonas, 23:30/00:15, Tijuana 23 h/25 h, formato 12 h, auth).
-- Placeholder: `/medicamentos`, `/citas`, `/sintomas`.
-- Prueba de dos cuentas contra el Supabase real (28 sept 2026, `supabase/verify-cross-user.sql`): `RESULTADO: 9/9 pruebas OK`. Repetir tras cada migración.
+- Supabase: migraciones `20260922171500`, `20260922230000` y `20260930041030` aplicadas. Historial reparado el 28 sept 2026 (las dos primeras estaban registradas con otras versiones; SQL idéntico). Desde P4, migraciones con el procedimiento de "Esquema (reglas)".
+- `/hoy` (P3): dosis del día en la zona del usuario (cookie `tz`, fallback America/Mazatlan), ordenadas; marcar como tomada y deshacer con `useOptimistic` + `useFormStatus`; resumen neutro; estados vacío, carga y error.
+- `/medicamentos` (P4): lista (nombre, dosis, horarios en 12 h, "Desde el…"), alta con 1 a 4 horarios y fecha de inicio (redirige a `/hoy`), eliminación con confirmación (cascade a sus dosis); estados vacío, carga y error. 150 tests de Vitest (zonas, 23:30/00:15, Tijuana 23 h/25 h y horas inexistente/repetida, ventana de 14 días, validación, formato 12 h, auth).
+- Placeholder: `/citas`, `/sintomas`.
+- Prueba de dos cuentas contra el Supabase real (`supabase/verify-cross-user.sql`): `RESULTADO: 9/9 pruebas OK` el 30 sept 2026, tras la migración `20260930041030` (la prueba 9 ahora espera `permission denied` para `anon`). Repetir tras cada migración.
 - Auth (demo): Confirm email desactivado, registro cerrado, 2 cuentas demo creadas desde el dashboard, solo datos ficticios.
 
 Hallazgos abiertos:
 - **AUTH-01**: Confirm email desactivado y registro cerrado durante la demo (cuentas creadas desde el dashboard). Antes de usuarios reales: reabrir el registro solo con Confirm email activo, crear la ruta de confirmación (exchangeCodeForSession o verifyOtp) y configurar SMTP propio; con Confirm email desactivado se puede saber si un correo tiene cuenta.
 - **AUTH-02**: protección de contraseñas filtradas (HaveIBeenPwned) desactivada; requiere plan Pro de Supabase.
-- **DB-03**: `anon` y `authenticated` conservan los grants por defecto de Supabase en las 5 tablas, incluido `TRUNCATE`, que no respeta RLS. Hoy no es explotable (PostgREST no lo expone y no hay funciones RPC). Se revoca en la migración de P4, junto con DB-01. Después, repetir `verify-cross-user.sql`.
-- **DB-01**: `doses.medication_id` acepta NULL (dosis huérfanas).
 - **DB-02**: sin trigger de creación de `profiles`.
 - **PWA-01**: falta `app/apple-icon.png` (iOS no usa los SVG del manifest).
+- **SCHED-01**: cada medicamento genera dosis solo para 14 días desde su fecha de inicio; después deja de aparecer en /hoy. Antes de usuarios reales: generación continua (por ejemplo, extender la ventana al abrir /hoy o con un job programado).
 
-Cerrados: **SEC-01** (mensajes por código y validación en servidor) y **UI-01** (modo claro forzado; modo oscuro completo post-presentación) en fix/base-segura.
+Cerrados: **SEC-01** (mensajes por código y validación en servidor) y **UI-01** (modo claro forzado; modo oscuro completo post-presentación) en fix/base-segura; **DB-01** (`doses.medication_id` NOT NULL) y **DB-03** (sin grants para `anon`; `authenticated` solo SELECT/INSERT/UPDATE/DELETE) en la migración `20260930041030` de feat/medicamentos.
