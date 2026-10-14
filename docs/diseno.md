@@ -115,7 +115,7 @@ Los tamaños van en rem para respetar el tamaño de letra del sistema. El peso v
 
 `components/icons.tsx`: paths de Lucide (licencia ISC, aviso en el archivo), viewBox 24, trazo 1.75 con `currentColor`, puntas redondeadas, `aria-hidden`. Prop `active` (trazo 2.25 + relleno al 14%) solo para la pestaña activa y el check de la escala.
 
-Set: Hoy (sol), Medicamentos (cápsula), Citas (calendario), Síntomas (cuaderno con lápiz), check en círculo, reloj, círculo vacío, info, cerrar sesión.
+Set: Hoy (sol), Medicamentos (cápsula), Citas (calendario), Síntomas (cuaderno con lápiz), check en círculo, reloj, círculo vacío, info, escudo con check (solo en el opening), cerrar sesión.
 
 Prohibido: cruces médicas, corazones, termómetros, listones y cualquier ícono sin texto al lado.
 
@@ -124,7 +124,12 @@ Prohibido: cruces médicas, corazones, termómetros, listones y cualquier ícono
 Aguja de brújula: un "rombo" que marca el rumbo. Punta crema al norte, sage-soft al sur, eje pine, sobre pine.
 
 - `app/icon.svg`: fuente de 512×512 con `rx` 112 (favicon).
-- `components/rumbo-mark.tsx`: el mismo dibujo con tokens (`fill-accent`, `fill-canvas`, `fill-sage-soft`). Con `settle` (solo en /login), la aguja se asienta una vez en 900 ms, solo con `motion-safe`: −32° → 5° con ease-out fuerte y 5° → 0° con ease-in-out fuerte (sin quiebre de velocidad al dar la vuelta). Es el único momento de marca. El movimiento funcional de navegación y de estado está permitido con las reglas de §13.
+- `components/rumbo-mark.tsx`: el mismo dibujo con tokens (`fill-accent`, `fill-canvas`, `fill-sage-soft`). Prop `motion`: con `"settle"` (solo en /login), la aguja se asienta una vez en 900 ms, solo con `motion-safe`: −32° → 5° con ease-out fuerte y 5° → 0° con ease-in-out fuerte (sin quiebre de velocidad al dar la vuelta); con `"opening"` calibra en el telón de bienvenida. Son los únicos momentos de marca. El movimiento funcional de navegación y de estado está permitido con las reglas de §13.
+- **Opening "Brújula y resguardo"** (`components/app-shell/opening-intro.tsx`, en el root layout): telón `fixed inset-0 z-50` en `accent-strong` que recibe a la persona una vez por sesión del navegador, en cualquier ruta. Halo radial `accent` solo detrás del emblema, anillo `sage-soft` al 15%, emblema de 88 px con borde `sage-soft/30`, "Rumbo" en serif `text-greeting text-canvas` (9.0:1) y "Tu espacio personal y seguro de seguimiento" con escudo en `text-secondary text-sage-soft` (5.05:1 sobre `accent-strong`; es la única vez que `sage-soft` va como texto, y el halo termina antes del texto porque sobre `accent` baja a 3.8:1). Es decorativo: `aria-hidden`, sin elementos enfocables, sin `h1`; la página real queda debajo con sus landmarks.
+  - Una vez por sesión: el componente guarda `sessionStorage["rumbo_opening_seen"] = "1"` (solo esa bandera, nada personal). Un `<script>` simple en `<head>` (`lib/opening.ts`, no `next/script`: su `beforeInteractive` inline corre después del primer pintado) marca `html[data-opening="done"]` y `globals.css` oculta el telón desde el primer cuadro al recargar. `<html>` lleva `suppressHydrationWarning` por ese atributo.
+  - Sin depender de JS: el telón llega en el HTML del servidor, anima solo con CSS y termina con `visibility: hidden` (fill `both`); si la hidratación llega tarde, no tapa ni atrapa toques. Con JS, `onAnimationEnd` del propio telón lo desmonta.
+  - Saltar: tocar el telón o cualquier tecla lo quita de inmediato (cualquier tecla y no solo Escape, para que el primer Tab no deje el foco detrás del telón, WCAG 2.4.11).
+  - En /login no compite con `settle`: la aguja del login termina a los 900 ms, detrás del telón, y queda quieta cuando el telón se abre. Al recargar en la misma sesión no hay telón y `settle` se ve como antes.
 - `scripts/generate-icons.mjs`: PNG sin alfa con fondo pine a sangre (iOS y Android aplican su máscara). `apple-icon.png` 180 y `icon-192/512` a escala 1.05; `icon-maskable-512` a 0.9 (la aguja llega a 153 px del centro, dentro de la zona segura de 204.8 px).
 
 ## 9. Microcopy
@@ -185,9 +190,14 @@ Movimiento funcional: confirma lo que la persona hizo o evita que algo aparezca 
 | Avisos y filas nuevas (`enterFromAbove`) | 200 ms | ease-out-strong | Solo opacidad |
 | Presión de botón | 150 ms | ease-out-strong | Sin escala |
 | Aguja del login | 900 ms, una vez | ease-out-strong + ease-in-out final | Quieta |
+| Opening: emblema (`animate-opening-emblem`) | 450 ms, opacidad 0 → 1 y `scale` 0.94 → 1 | ease-out-strong | Estático |
+| Opening: anillo (`animate-opening-ring`) | 900 ms, `scale` 0.88 → 1.06, opacidad 0 → 0.35 → 0.15 | ease-out-strong | Estático al 15% |
+| Opening: aguja (`animate-opening-needle`) | 950 ms, −38° → 4° (65%) → 0° | ease-out-strong + ease-in-out final | Quieta |
+| Opening: "Rumbo" y frase (`animate-opening-title`, `-subtitle`) | 380 ms con 220 ms y 360 ms de retraso (keyframe `screen-enter`) | ease-out-strong | Visibles desde el inicio |
+| Opening: telón (`animate-opening-curtain`) | Quieto hasta 1400 ms (450 ms de pausa de lectura tras la entrada) y fundido 1 → 0 de 450 ms; total 1.85 s | ease-out-strong | `animate-opening-curtain-reduced`: marca estática 600 ms + fundido de 200 ms (0.8 s) |
 
 - Nada de rebote, confeti, rachas ni movimiento como premio. Marcar una dosis no anima nada.
-- Solo se animan `opacity`, `translate`, `scale` y `transform`. Nunca `width`, `height`, `top`, `margin` ni colores de estado.
+- Solo se animan `opacity`, `translate`, `scale` y `transform`. Nunca `width`, `height`, `top`, `margin` ni colores de estado. Excepción: el telón del opening termina con `visibility: hidden` (no es movimiento: evita que un telón invisible atrape toques).
 - Todo desplazamiento va detrás de `motion-safe`.
 - La entrada de pantalla usa `animation-fill-mode: backwards`: al terminar no queda `translate` que cambie el bloque contenedor de `fixed`/`sticky`. No va en un `template.tsx` (con `loading.tsx` animaría el esqueleto) y no se escalonan tarjetas.
 - No se repite al marcar o deshacer una dosis, al guardar síntomas ni con el `router.refresh()` de `TimeZoneSync`: esos casos reconcilian la misma raíz (verificado en navegador el 30 sept 2026). Guardar una cita usa el mismo mecanismo (Server Action + revalidación); no se probó en vivo.

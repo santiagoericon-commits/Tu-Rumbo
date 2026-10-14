@@ -80,6 +80,17 @@
   /* Reduced motion: mismo retraso, sin fundido (el retraso no es movimiento). */
   --animate-skeleton-wait: skeleton-in 0s 150ms backwards;
 
+  /* Opening (components/app-shell/opening-intro.tsx): 1.85 s, o 0.8 s con reduced motion.
+     El telón termina con visibility: hidden (fill both): aunque JS no hidrate a tiempo, no tapa ni
+     atrapa toques. */
+  --animate-opening-curtain: opening-curtain-out 450ms var(--ease-out-strong) 1400ms both;
+  --animate-opening-curtain-reduced: opening-curtain-out 200ms var(--ease-out-strong) 600ms both;
+  --animate-opening-emblem: opening-emblem 450ms var(--ease-out-strong) backwards;
+  --animate-opening-ring: opening-ring 900ms var(--ease-out-strong) both;
+  --animate-opening-needle: opening-needle 950ms var(--ease-out-strong) both;
+  --animate-opening-title: screen-enter 380ms var(--ease-out-strong) 220ms backwards;
+  --animate-opening-subtitle: screen-enter 380ms var(--ease-out-strong) 360ms backwards;
+
   /* La curva aplica por tramo: la del 65% (ease-in-out fuerte) gobierna solo 5° → 0° y sale del
      reposo al dar la vuelta, sin quiebre de velocidad. Va literal: Chrome ignora var() como
      animation-timing-function dentro de un keyframe (verificado cuadro por cuadro). */
@@ -108,6 +119,54 @@
       opacity: 0;
     }
   }
+
+  @keyframes opening-curtain-out {
+    to {
+      opacity: 0;
+      visibility: hidden;
+    }
+  }
+
+  @keyframes opening-emblem {
+    from {
+      opacity: 0;
+      scale: 0.94;
+    }
+  }
+
+  @keyframes opening-ring {
+    0% {
+      opacity: 0;
+      scale: 0.88;
+    }
+    45% {
+      opacity: 0.35;
+    }
+    100% {
+      opacity: 0.15;
+      scale: 1.06;
+    }
+  }
+
+  /* Misma regla que needle-settle: la curva del 65% va literal y gobierna solo 4° → 0°. */
+  @keyframes opening-needle {
+    0% {
+      rotate: -38deg;
+    }
+    65% {
+      rotate: 4deg;
+      animation-timing-function: cubic-bezier(0.77, 0, 0.175, 1);
+    }
+    100% {
+      rotate: 0deg;
+    }
+  }
+}
+
+/* El script de <head> (app/layout.tsx) marca la sesión que ya vio el opening: el telón no se
+   pinta ni un cuadro al recargar. */
+html[data-opening="done"] [data-opening-curtain] {
+  display: none !important;
 }
 
 /* Protección: `dark:` solo aplica con una clase .dark que hoy nunca se pone. Preparado para el modo oscuro post-presentación. */

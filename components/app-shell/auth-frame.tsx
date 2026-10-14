@@ -13,7 +13,7 @@ export function AuthFrame({ heading, settle = false, children, footer }: AuthFra
   return (
     <main className="mx-auto flex w-full max-w-[400px] flex-1 flex-col justify-center gap-8 px-4 pt-[calc(32px+env(safe-area-inset-top))] pb-8">
       <div className="flex flex-col items-center gap-3 text-center">
-        <RumboMark className="size-16" settle={settle} />
+        <RumboMark className="size-16" motion={settle ? "settle" : undefined} />
         <h1 className="font-serif text-greeting text-ink">Rumbo</h1>
         <p className="text-body text-balance text-ink-muted">Tus dosis, tus citas y tu registro diario, en un solo lugar.</p>
       </div>
