@@ -71,6 +71,7 @@
   --spacing-tabbar: 4rem;
 
   --ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.42, 0, 0.58, 1);
   --animate-needle-settle: needle-settle 900ms var(--ease-out-strong) both;
   /* Entrada de pantalla. backwards: al terminar no queda translate que cambie el
      bloque contenedor de fixed/sticky de los descendientes. */
@@ -80,11 +81,12 @@
   /* Reduced motion: mismo retraso, sin fundido (el retraso no es movimiento). */
   --animate-skeleton-wait: skeleton-in 0s 150ms backwards;
 
-  /* Opening (components/app-shell/opening-intro.tsx): 1.85 s, o 0.8 s con reduced motion.
+  /* Opening (components/app-shell/opening-intro.tsx): 2.2 s, o 0.8 s con reduced motion.
+     El fundido del telón usa ease-in-out: ease-out-strong lo dejaba casi transparente a la mitad.
      El telón termina con visibility: hidden (fill both): aunque JS no hidrate a tiempo, no tapa ni
      atrapa toques. */
-  --animate-opening-curtain: opening-curtain-out 450ms var(--ease-out-strong) 1400ms both;
-  --animate-opening-curtain-reduced: opening-curtain-out 200ms var(--ease-out-strong) 600ms both;
+  --animate-opening-curtain: opening-curtain-out 800ms var(--ease-in-out) 1400ms both;
+  --animate-opening-curtain-reduced: opening-curtain-out 200ms var(--ease-in-out) 600ms both;
   --animate-opening-emblem: opening-emblem 450ms var(--ease-out-strong) backwards;
   --animate-opening-ring: opening-ring 900ms var(--ease-out-strong) both;
   --animate-opening-needle: opening-needle 950ms var(--ease-out-strong) both;

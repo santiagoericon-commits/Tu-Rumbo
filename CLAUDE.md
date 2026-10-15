@@ -38,7 +38,7 @@ Variables: solo `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Se
 | `app/auth-actions.ts` | Login, registro, logout (Server Actions). **Protegido** |
 | `app/(protected)/layout.tsx` | Segunda capa de auth + shell: enlace "Saltar al contenido", `TopBar`, `<main id="contenido">`, `TabBar` |
 | `app/(protected)/{hoy,medicamentos,citas,sintomas}/page.tsx` | Pantallas del MVP |
-| `app/layout.tsx` | Root layout con footer "Rumbo no sustituye la atención médica." (**no quitar**) |
+| `app/layout.tsx` | Root layout: footer "Rumbo no sustituye la atención médica." (**no quitar**), telón de opening y el script de `<head>` que evita el destello al recargar |
 | `app/manifest.ts`, `public/sw.js`, `app/service-worker-register.tsx` | PWA |
 | `app/icon.svg`, `app/apple-icon.png`, `public/icons/*.png`, `scripts/generate-icons.mjs` | Marca (aguja de brújula): favicon SVG y PNG de PWA generados una vez con el `sharp` de `next` (`node scripts/generate-icons.mjs`) |
 | `supabase/migrations/` | Esquema. **Nunca editar una migración aplicada**; crear una nueva |
@@ -50,6 +50,7 @@ Variables: solo `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Se
 | `lib/dose-schedule.ts` | `generateDoseInstants`: dosis de 14 días desde la fecha de inicio, en la zona del usuario, nunca en el pasado. Solo cambia con tests |
 | `lib/medication-validation.ts`, `lib/medication-messages.ts` | Validación en servidor del formulario de medicamento (nombre 1–80, dosis ≤ 60, 1–4 horarios HH:MM, inicio hoy..+365) y diccionario cerrado de sus errores |
 | `lib/schedule-format.ts` | Texto de horarios ("8:00 a.m. y 8:00 p.m."), de fecha de calendario (`formatCalendarDate`: "martes, 29 de septiembre") y de fecha de inicio ("Desde el martes, 29 de septiembre") |
+| `lib/opening.ts` | Bandera `rumbo_opening_seen` (solo `"1"` en `sessionStorage`, nada personal) y el script de `<head>` que marca `html[data-opening="done"]` |
 | `lib/ids.ts` | `isUuid` |
 | `lib/form-text.ts` | `normalizeMultiline`: el textarea envía `
 ` pero `maxLength` cuenta uno; se normaliza antes de medir |
@@ -63,8 +64,8 @@ Variables: solo `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Se
 | `components/time-zone-sync.tsx` | Escribe la cookie `tz` desde el navegador y hace un solo `router.refresh()` si cambió |
 | `components/submit-button.tsx` | Botón de envío compartido con `useFormStatus`; la variante llega por `className` |
 | `components/ui/` | `styles.ts` (buttonPrimary, buttonSecondary, buttonQuiet, textLink, field, fieldLabel, card, cardTitle), `page-header`, `notice` (error=alert, success=status, info sin role), `empty-state`, `delete-confirm`, `error-panel`, `skeletons` |
-| `components/app-shell/` | `sections.ts` (fuente única de las 4 secciones: ruta, pestaña, ícono, tinte), `top-bar`, `tab-bar` (`data-app-tabbar`, `aria-current` con la ruta real, pestaña optimista con `onNavigate` que se reinicia al cambiar la ruta, barra deslizante), `auth-frame` (login y registro) |
-| `components/icons.tsx`, `components/rumbo-mark.tsx` | Íconos de interfaz (paths de Lucide, ISC) y la marca con tokens |
+| `components/app-shell/` | `sections.ts` (fuente única de las 4 secciones: ruta, pestaña, ícono, tinte), `top-bar`, `tab-bar` (`data-app-tabbar`, `aria-current` con la ruta real, pestaña optimista con `onNavigate` que se reinicia al cambiar la ruta, barra deslizante), `auth-frame` (login y registro), `opening-intro` (telón de bienvenida, una vez por sesión; spec en `docs/diseno.md` §8 y §13) |
+| `components/icons.tsx`, `components/rumbo-mark.tsx` | Íconos de interfaz (paths de Lucide, ISC; el escudo solo en el opening) y la marca con tokens (`motion`: `"settle"` en /login, `"opening"` en el telón) |
 | `docs/diseno.md`, `docs/fuentes.md` | Sistema de diseño (semilla de la skill `rumbo-diseno`) y fuentes de copy con contenido de salud |
 
 ## Patrones obligatorios
@@ -174,7 +175,8 @@ Cambios en archivos protegidos, `app/(protected)/layout.tsx`, migraciones o lóg
 - Pase visual (P6, 30 sept 2026, rama `feat/pase-visual`): tokens definitivos, Inter + Source Serif 4, marca e íconos PWA en PNG, shell con barra superior y barra inferior de 4 pestañas ("Medicinas" en la pestaña, D1), login y registro rediseñados, las 4 pantallas con PageHeader por sección, tarjetas, avisos neutros, estados vacío/carga/error y escala de síntomas con palabras (D2). Solo presentación: lógica, acciones y `lib/**` sin cambios (salvo un comentario); 206 tests en verde. Sistema en `docs/diseno.md`.
 - Fluidez (P6.5, 30 sept 2026, rama `feat/fluidez`): la pestaña tocada se ve activa en el siguiente frame (`onNavigate`; sin precarga, 4 ms contra 1.2 s de la ruta real con Slow 4G) y una sola barra se desliza entre columnas (D3); el esqueleto de `loading.tsx` es invisible los primeros 150 ms; el contenido entra con `screen-enter` (240 ms, sin transform residual, no se repite con acciones ni con `router.refresh()`); avisos y filas nuevas de horario entran con `enterFromAbove`; foco al horario nuevo y al anterior al quitar; `ease-out-strong` en botones y DeleteConfirm; aguja sin quiebre en el 65%. Solo CSS e interfaz; 206 tests sin cambios.
 - Demo freeze (P7, 30 sept 2026, rama `chore/demo-freeze`): `/registro` explica que las cuentas son por invitación (sin formulario; `signupAction` sigue exportada sin uso) y `AuthFrame` acepta `footer` opcional. Cuenta demo vaciada y sembrada por SQL de datos (no migración, no commiteado): Anastrozol 8:00 a.m. y Calcio y vitamina D 9:00 a.m. desde el 1 sept, dosis del 30 sept al 13 oct (hoy la de 8:00 tomada), 3 citas (2 próximas, 1 anterior) y 6 registros de síntomas (24 a 29 sept). QA en 390 px con build de producción en UTC.
-- **`main` congelado para la presentación del 30 sept 2026: solo fixes críticos.**
+- Opening (14 oct 2026, rama `feat/opening-animation`): telón "Brújula y resguardo", una vez por sesión del navegador. La frase "Tu espacio personal y seguro de seguimiento" queda aceptada para la demo; el aviso de privacidad (LFPDPPP) se escribe antes de usuarios reales.
+- El freeze de la presentación del 30 sept 2026 terminó el 14 oct 2026. `main` vuelve a recibir actualizaciones de la app. El push sigue pidiendo confirmación de Rafa: un merge a `main` en el remoto despliega a producción.
 
 Hallazgos abiertos:
 - **AUTH-01**: Confirm email desactivado y registro cerrado durante la demo (cuentas creadas desde el dashboard). Antes de usuarios reales: reabrir el registro solo con Confirm email activo, crear la ruta de confirmación (exchangeCodeForSession o verifyOtp) y configurar SMTP propio; con Confirm email desactivado se puede saber si un correo tiene cuenta.

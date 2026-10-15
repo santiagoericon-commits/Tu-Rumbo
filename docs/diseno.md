@@ -194,7 +194,7 @@ Movimiento funcional: confirma lo que la persona hizo o evita que algo aparezca 
 | Opening: anillo (`animate-opening-ring`) | 900 ms, `scale` 0.88 → 1.06, opacidad 0 → 0.35 → 0.15 | ease-out-strong | Estático al 15% |
 | Opening: aguja (`animate-opening-needle`) | 950 ms, −38° → 4° (65%) → 0° | ease-out-strong + ease-in-out final | Quieta |
 | Opening: "Rumbo" y frase (`animate-opening-title`, `-subtitle`) | 380 ms con 220 ms y 360 ms de retraso (keyframe `screen-enter`) | ease-out-strong | Visibles desde el inicio |
-| Opening: telón (`animate-opening-curtain`) | Quieto hasta 1400 ms (450 ms de pausa de lectura tras la entrada) y fundido 1 → 0 de 450 ms; total 1.85 s | ease-out-strong | `animate-opening-curtain-reduced`: marca estática 600 ms + fundido de 200 ms (0.8 s) |
+| Opening: telón (`animate-opening-curtain`) | Quieto hasta 1400 ms (450 ms de pausa de lectura tras la entrada) y fundido 1 → 0 de 800 ms; total 2.2 s | ease-in-out (`--ease-in-out`) | `animate-opening-curtain-reduced`: marca estática 600 ms + fundido de 200 ms con la misma curva (0.8 s) |
 
 - Nada de rebote, confeti, rachas ni movimiento como premio. Marcar una dosis no anima nada.
 - Solo se animan `opacity`, `translate`, `scale` y `transform`. Nunca `width`, `height`, `top`, `margin` ni colores de estado. Excepción: el telón del opening termina con `visibility: hidden` (no es movimiento: evita que un telón invisible atrape toques).
