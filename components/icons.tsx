@@ -118,6 +118,46 @@ export function ShieldCheckIcon(props: IconProps) {
   );
 }
 
+// Apoyo (P9): mano que ayuda. Sin corazones (docs/diseno.md §7).
+export function HandHelpingIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M11 12h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 14" />
+      <path d="m7 18 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.75-2.91l-4.2 3.9" />
+      <path d="m2 13 6 6" />
+    </Svg>
+  );
+}
+
+export function BusIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M8 6v6M15 6v6M2 12h19.6M9 18h5" />
+      <path d="M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.4-.1-.8-.2-1.2l-1.4-5C20.1 6.8 19.1 6 18 6H4a2 2 0 0 0-2 2v10h3" />
+      <circle cx="7" cy="18" r="2" />
+      <circle cx="16" cy="18" r="2" />
+    </Svg>
+  );
+}
+
+export function ClipboardListIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+      <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+      <path d="M12 11h4M12 16h4M8 11h.01M8 16h.01" />
+    </Svg>
+  );
+}
+
+export function MessageCircleIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
+    </Svg>
+  );
+}
+
 export function LogOutIcon(props: IconProps) {
   return (
     <Svg {...props}>

@@ -5,6 +5,7 @@ export const MAX_NAME_LENGTH = 80;
 export const MAX_DOSAGE_LENGTH = 60;
 export const MAX_TIMES = 4;
 export const MAX_START_OFFSET_DAYS = 365;
+export const MAX_SUPPLY_COUNT = 1000;
 
 export const TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
@@ -15,7 +16,21 @@ export type MedicationInput = {
   dosage: string | null;
   times: string[];
   startDate: string;
+  supplyCount: number | null;
 };
+
+const SUPPLY_PATTERN = /^\d{1,4}$/;
+
+// Tomas que le quedan (P9): vacío = sin dato; si no, entero de 0 a 1000 sin signo ni decimales.
+export function parseSupplyCount(raw: FormDataEntryValue | null): { ok: true; value: number | null } | { ok: false } {
+  if (raw === null) return { ok: true, value: null };
+  if (typeof raw !== "string") return { ok: false };
+  const value = raw.trim();
+  if (value === "") return { ok: true, value: null };
+  if (!SUPPLY_PATTERN.test(value)) return { ok: false };
+  const count = Number(value);
+  return count <= MAX_SUPPLY_COUNT ? { ok: true, value: count } : { ok: false };
+}
 
 function isoDateToUtc(value: string): number | null {
   if (!DATE_PATTERN.test(value)) return null;
@@ -68,5 +83,8 @@ export function parseMedicationForm(formData: FormData, todayLocal: string): Med
   const offset = daysBetween(todayLocal, rawStart);
   if (offset === null || offset < 0 || offset > MAX_START_OFFSET_DAYS) return null;
 
-  return { name, dosage: dosage === "" ? null : dosage, times, startDate: rawStart };
+  const supply = parseSupplyCount(formData.get("supplyCount"));
+  if (!supply.ok) return null;
+
+  return { name, dosage: dosage === "" ? null : dosage, times, startDate: rawStart, supplyCount: supply.value };
 }

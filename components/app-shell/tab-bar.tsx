@@ -3,12 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { SECTION_ORDER, SECTIONS, type SectionKey } from "./sections";
+import { SECTION_ORDER, SECTIONS, type TabKey } from "./sections";
 
 // translate en % del propio ancho (1/4 de la fila): cada paso es una columna. Clases completas para Tailwind.
 const INDICATOR_POSITION = ["translate-x-0", "translate-x-full", "translate-x-[200%]", "translate-x-[300%]"];
 
-function sectionFor(pathname: string): SectionKey | null {
+function sectionFor(pathname: string): TabKey | null {
   return (
     SECTION_ORDER.find((key) => {
       const { href } = SECTIONS[key];
@@ -25,7 +25,7 @@ function sectionFor(pathname: string): SectionKey | null {
 export function TabBar() {
   const pathname = usePathname();
   const current = sectionFor(pathname);
-  const [pending, setPending] = useState<SectionKey | null>(null);
+  const [pending, setPending] = useState<TabKey | null>(null);
   // Reinicio explícito al cambiar la ruta (también con atrás del navegador): un pending viejo nunca revive.
   const [seenPathname, setSeenPathname] = useState(pathname);
   if (seenPathname !== pathname) {

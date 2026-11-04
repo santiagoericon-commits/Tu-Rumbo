@@ -7,6 +7,7 @@ import { buttonPrimary, buttonSecondary, enterFromAbove, field, fieldLabel } fro
 import { MEDICATION_ERROR_MESSAGES } from "@/lib/medication-messages";
 import { MAX_DOSAGE_LENGTH, MAX_NAME_LENGTH, MAX_TIMES } from "@/lib/medication-validation";
 import { createMedicationAction, type CreateMedicationState } from "./actions";
+import { SupplyCountField } from "./supply-count-field";
 
 const INITIAL: CreateMedicationState = { status: "idle" };
 
@@ -95,6 +96,8 @@ export function MedicationForm({ todayLocal, maxStartDate }: MedicationFormProps
           max={maxStartDate}
         />
       </label>
+
+      <SupplyCountField hintId="tomas-alta" />
 
       {state.status === "error" ? <Notice kind="error">{MEDICATION_ERROR_MESSAGES[state.code]}</Notice> : null}
 
