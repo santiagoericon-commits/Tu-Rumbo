@@ -44,9 +44,11 @@ begin
   select count(*) into n from symptom_logs where user_id = user_a;
   if n <> 0 then raise exception 'FALLO 4: B ve síntomas de A'; end if;
 
-  -- 5. B no puede crear una dosis propia apuntando al medicamento de A (FK compuesta)
+  -- 5. B no puede crear una dosis propia apuntando al medicamento de A (FK compuesta).
+  --    Otro instante: con el mismo now() la restricción única (medication_id, scheduled_at)
+  --    se revisa antes que la FK y el error sería unique_violation.
   begin
-    insert into doses (user_id, medication_id, scheduled_at) values (user_b, med_a, now());
+    insert into doses (user_id, medication_id, scheduled_at) values (user_b, med_a, now() + interval '1 hour');
     raise exception 'FALLO 5: B creó una dosis con el medicamento de A';
   exception when foreign_key_violation then null;
   end;

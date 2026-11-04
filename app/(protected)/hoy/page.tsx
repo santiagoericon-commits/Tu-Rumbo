@@ -6,6 +6,7 @@ import { formatLongDate, formatTime, getDayRange } from "@/lib/date-range";
 import { createClient } from "@/lib/supabase/server";
 import { getUserTimeZone } from "@/lib/timezone.server";
 import { DoseList } from "./dose-list";
+import { topUpDoses } from "./top-up";
 import type { DoseView } from "./types";
 
 type DoseRow = {
@@ -25,6 +26,9 @@ export default async function HoyPage() {
   const tz = await getUserTimeZone();
   const now = new Date();
   const { start, end } = getDayRange(tz, now);
+
+  // Antes de leer: completa las dosis que falten (SCHED-01). Nunca lanza.
+  await topUpDoses(supabase, user.id, tz, now);
 
   const { data, error } = await supabase
     .from("doses")
