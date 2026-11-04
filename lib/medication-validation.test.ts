@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseMedicationForm } from "@/lib/medication-validation";
+import { parseMedicationForm, parseSupplyCount } from "@/lib/medication-validation";
 
 const TODAY = "2026-09-29";
 
@@ -23,7 +23,18 @@ describe("parseMedicationForm", () => {
       dosage: "20 mg",
       times: ["08:00"],
       startDate: TODAY,
+      supplyCount: null,
     });
+  });
+
+  it("surtido: opcional; con dato se guarda como número", () => {
+    expect(parseMedicationForm(form({ ...valid, supplyCount: "20" }), TODAY)).toMatchObject({ supplyCount: 20 });
+    expect(parseMedicationForm(form({ ...valid, supplyCount: "" }), TODAY)).toMatchObject({ supplyCount: null });
+  });
+
+  it("surtido inválido rechaza el formulario", () => {
+    expect(parseMedicationForm(form({ ...valid, supplyCount: "1001" }), TODAY)).toBeNull();
+    expect(parseMedicationForm(form({ ...valid, supplyCount: "-3" }), TODAY)).toBeNull();
   });
 
   it("recorta espacios y deja la dosis en null si viene vacía", () => {
@@ -100,5 +111,27 @@ describe("parseMedicationForm", () => {
     const file = new Blob(["x"], { type: "text/plain" });
     expect(parseMedicationForm(form({ ...valid, name: file }), TODAY)).toBeNull();
     expect(parseMedicationForm(form({ ...valid, times: file }), TODAY)).toBeNull();
+  });
+});
+
+describe("parseSupplyCount", () => {
+  it("vacío o ausente es 'sin dato'", () => {
+    expect(parseSupplyCount("")).toEqual({ ok: true, value: null });
+    expect(parseSupplyCount("   ")).toEqual({ ok: true, value: null });
+    expect(parseSupplyCount(null)).toEqual({ ok: true, value: null });
+  });
+
+  it("acepta enteros de 0 a 1000", () => {
+    expect(parseSupplyCount("0")).toEqual({ ok: true, value: 0 });
+    expect(parseSupplyCount(" 9 ")).toEqual({ ok: true, value: 9 });
+    expect(parseSupplyCount("1000")).toEqual({ ok: true, value: 1000 });
+  });
+
+  it.each(["1001", "-1", "1.5", "1e3", "+5", "abc", "12345", "0x10"])("rechaza %s", (raw) => {
+    expect(parseSupplyCount(raw)).toEqual({ ok: false });
+  });
+
+  it("rechaza un archivo en lugar de texto", () => {
+    expect(parseSupplyCount(new Blob(["5"]) as unknown as FormDataEntryValue)).toEqual({ ok: false });
   });
 });

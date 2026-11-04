@@ -1,9 +1,19 @@
-import { CalendarIcon, NotebookPenIcon, PillIcon, SunIcon, type IconComponent } from "@/components/icons";
+import {
+  CalendarIcon,
+  HandHelpingIcon,
+  NotebookPenIcon,
+  PillIcon,
+  SunIcon,
+  type IconComponent,
+} from "@/components/icons";
 
 // Fuente única de las 4 secciones: pestaña, encabezado y estado vacío.
 // El acento de sección solo pinta el ícono, el tinte del encabezado y el estado vacío;
 // nunca botones, errores ni estados. Clases completas para que Tailwind las detecte.
-export type SectionKey = "hoy" | "medicamentos" | "citas" | "sintomas";
+// "apoyo" (P9) no es pestaña: queda fuera de SECTION_ORDER. Usa la identidad propia de Rumbo
+// (docs/marca.md §5), sin color nuevo.
+export type SectionKey = "hoy" | "medicamentos" | "citas" | "sintomas" | "apoyo";
+export type TabKey = Exclude<SectionKey, "apoyo">;
 
 export type Section = {
   href: string;
@@ -31,6 +41,13 @@ export const SECTIONS: Record<SectionKey, Section> = {
     tintClass: "bg-plum-tint",
     inkClass: "text-plum-ink",
   },
+  apoyo: {
+    href: "/apoyo",
+    tabLabel: "Apoyo",
+    Icon: HandHelpingIcon,
+    tintClass: "bg-surface-muted",
+    inkClass: "text-accent",
+  },
 };
 
-export const SECTION_ORDER: SectionKey[] = ["hoy", "medicamentos", "citas", "sintomas"];
+export const SECTION_ORDER: TabKey[] = ["hoy", "medicamentos", "citas", "sintomas"];

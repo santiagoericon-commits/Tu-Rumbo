@@ -3,9 +3,13 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Notice } from "@/components/ui/notice";
 import { PageHeader } from "@/components/ui/page-header";
 import { formatLongDate, formatTime, getDayRange } from "@/lib/date-range";
+import { formatLocalDate } from "@/lib/local-time";
 import { createClient } from "@/lib/supabase/server";
+import { formatSupplyLine } from "@/lib/supply";
+import { loadSupplySummaries } from "@/lib/supply.server";
 import { getUserTimeZone } from "@/lib/timezone.server";
 import { DoseList } from "./dose-list";
+import { LowSupplyCard, SupportEntryCard, type LowSupplyItem } from "./support-cards";
 import { topUpDoses } from "./top-up";
 import type { DoseView } from "./types";
 
@@ -30,14 +34,18 @@ export default async function HoyPage() {
   // Antes de leer: completa las dosis que falten (SCHED-01). Nunca lanza.
   await topUpDoses(supabase, user.id, tz, now);
 
-  const { data, error } = await supabase
-    .from("doses")
-    .select("id, scheduled_at, status, medications(name, dosage)")
-    .eq("user_id", user.id)
-    .gte("scheduled_at", start.toISOString())
-    .lt("scheduled_at", end.toISOString())
-    .order("scheduled_at", { ascending: true })
-    .overrideTypes<DoseRow[], { merge: false }>();
+  const [{ data, error }, supplies] = await Promise.all([
+    supabase
+      .from("doses")
+      .select("id, scheduled_at, status, medications(name, dosage)")
+      .eq("user_id", user.id)
+      .gte("scheduled_at", start.toISOString())
+      .lt("scheduled_at", end.toISOString())
+      .order("scheduled_at", { ascending: true })
+      .overrideTypes<DoseRow[], { merge: false }>(),
+    // Si el surtido no carga, Hoy se ve igual sin la tarjeta (P9).
+    loadSupplySummaries(supabase, user.id, tz, now),
+  ]);
 
   if (error) console.error("[hoy] consulta falló:", error.code);
 
@@ -49,6 +57,11 @@ export default async function HoyPage() {
     dosage: row.medications?.dosage ?? null,
     status: row.status,
   }));
+
+  const today = formatLocalDate(now, tz);
+  const lowSupply: LowSupplyItem[] = (supplies ?? [])
+    .filter((item) => item.summary.needsSupport)
+    .map((item) => ({ id: item.id, name: item.name, line: formatSupplyLine(item.summary, today) }));
 
   return (
     <div className="flex flex-col gap-4 motion-safe:animate-screen-enter">
@@ -67,6 +80,9 @@ export default async function HoyPage() {
       ) : (
         <DoseList doses={doses} />
       )}
+
+      <LowSupplyCard items={lowSupply} />
+      <SupportEntryCard />
 
       {/* [PENDIENTE REVISIÓN PROFESIONAL] */}
       <Notice kind="info">Si tienes dudas sobre una dosis, consulta a tu médico o farmacéutico.</Notice>

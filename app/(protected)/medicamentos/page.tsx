@@ -7,10 +7,12 @@ import { addDaysIso, formatLocalDate } from "@/lib/local-time";
 import { MAX_START_OFFSET_DAYS } from "@/lib/medication-validation";
 import { formatScheduleTimes, formatStartDate } from "@/lib/schedule-format";
 import { createClient } from "@/lib/supabase/server";
+import { formatSupplyLine, type SupplySummary } from "@/lib/supply";
+import { loadSupplySummaries } from "@/lib/supply.server";
 import { getUserTimeZone } from "@/lib/timezone.server";
 import { MedicationForm } from "./medication-form";
 import { MedicationItem } from "./medication-item";
-import type { MedicationView } from "./types";
+import type { MedicationView, SupplyView } from "./types";
 
 type MedicationRow = {
   id: string;
@@ -20,6 +22,11 @@ type MedicationRow = {
   start_date: string;
 };
 
+function toSupplyView(summary: SupplySummary | undefined, today: string): SupplyView | null {
+  if (!summary) return null;
+  return { remaining: summary.remaining, line: formatSupplyLine(summary, today), needsSupport: summary.needsSupport };
+}
+
 export default async function MedicamentosPage() {
   const supabase = await createClient();
   const {
@@ -28,7 +35,8 @@ export default async function MedicamentosPage() {
   if (!user) redirect("/login");
 
   const tz = await getUserTimeZone();
-  const todayLocal = formatLocalDate(new Date(), tz);
+  const now = new Date();
+  const todayLocal = formatLocalDate(now, tz);
   const maxStartDate = addDaysIso(todayLocal, MAX_START_OFFSET_DAYS);
 
   const { data, error } = await supabase
@@ -40,12 +48,17 @@ export default async function MedicamentosPage() {
 
   if (error) console.error("[medicamentos] consulta falló:", error.code);
 
+  // Si el surtido no carga, la lista se muestra igual, sin la línea de tomas.
+  const supplies = error ? null : await loadSupplySummaries(supabase, user.id, tz, now);
+  const supplyById = new Map((supplies ?? []).map((item) => [item.id, item.summary]));
+
   const medications: MedicationView[] = (data ?? []).map((row) => ({
     id: row.id,
     name: row.name,
     dosage: row.dosage,
     timesLabel: formatScheduleTimes(row.schedule_times),
     startLabel: formatStartDate(row.start_date),
+    supply: toSupplyView(supplyById.get(row.id), todayLocal),
   }));
 
   return (

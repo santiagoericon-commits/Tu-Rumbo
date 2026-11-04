@@ -5,8 +5,8 @@ import { redirect } from "next/navigation";
 import { generateDoseInstants } from "@/lib/dose-schedule";
 import { isUuid } from "@/lib/ids";
 import { formatLocalDate } from "@/lib/local-time";
-import type { MedicationErrorCode } from "@/lib/medication-messages";
-import { parseMedicationForm } from "@/lib/medication-validation";
+import type { MedicationErrorCode, SupplyErrorCode } from "@/lib/medication-messages";
+import { parseMedicationForm, parseSupplyCount } from "@/lib/medication-validation";
 import { createClient } from "@/lib/supabase/server";
 import { getUserTimeZone } from "@/lib/timezone.server";
 
@@ -47,6 +47,9 @@ export async function createMedicationAction(
       dosage: input.dosage,
       schedule_times: input.times,
       start_date: input.startDate,
+      // Surtido opcional (P9): el conteo y su momento van juntos (check medications_supply_pair_check).
+      supply_count: input.supplyCount,
+      supply_set_at: input.supplyCount === null ? null : now.toISOString(),
     })
     .select("id")
     .single()
@@ -80,6 +83,47 @@ export async function createMedicationAction(
   revalidatePath("/medicamentos");
   revalidatePath("/hoy");
   redirect("/hoy");
+}
+
+export type UpdateSupplyState =
+  | { status: "idle" }
+  | { status: "saved" }
+  | { status: "error"; code: SupplyErrorCode };
+
+// Surtido (P9): guarda cuántas tomas le quedan y desde cuándo se cuentan. Vacío borra el dato.
+export async function updateSupplyAction(
+  _previous: UpdateSupplyState,
+  formData: FormData,
+): Promise<UpdateSupplyState> {
+  const medicationId = formData.get("medicationId");
+  const supply = parseSupplyCount(formData.get("supplyCount"));
+  if (!isUuid(medicationId) || !supply.ok) return { status: "error", code: "datos-invalidos" };
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { status: "error", code: "generico" };
+
+  // RLS filtra las filas ajenas; un UPDATE sin filas no da error, por eso se piden las afectadas.
+  const { data, error } = await supabase
+    .from("medications")
+    .update({
+      supply_count: supply.value,
+      supply_set_at: supply.value === null ? null : new Date().toISOString(),
+    })
+    .eq("id", medicationId)
+    .eq("user_id", user.id)
+    .select("id");
+
+  if (error || !data || data.length === 0) {
+    logFailure("surtido", error?.code ?? "sin-filas");
+    return { status: "error", code: "generico" };
+  }
+
+  revalidatePath("/medicamentos");
+  revalidatePath("/hoy");
+  return { status: "saved" };
 }
 
 export type DeleteMedicationResult = { ok: true } | { ok: false; code: "generico" };

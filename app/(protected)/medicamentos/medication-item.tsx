@@ -4,6 +4,7 @@ import { ClockIcon } from "@/components/icons";
 import { DeleteConfirm } from "@/components/ui/delete-confirm";
 import { card } from "@/components/ui/styles";
 import { deleteMedicationAction } from "./actions";
+import { SupplyEditor } from "./supply-editor";
 import type { MedicationView } from "./types";
 
 export function MedicationItem({ medication }: { medication: MedicationView }) {
@@ -16,6 +17,8 @@ export function MedicationItem({ medication }: { medication: MedicationView }) {
         {medication.timesLabel}
       </p>
       <p className="mt-1 text-secondary text-ink-muted">{medication.startLabel}</p>
+
+      <SupplyEditor medicationId={medication.id} medicationName={medication.name} supply={medication.supply} />
 
       <DeleteConfirm
         question="¿Eliminar este medicamento y sus dosis programadas?"
