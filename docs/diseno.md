@@ -87,7 +87,7 @@ Los tamaños van en rem para respetar el tamaño de letra del sistema. El peso v
 | ErrorPanel | `components/ui/error-panel.tsx` | PageHeader + Notice error + "Intentar de nuevo" (`retry`) | nunca muestra `error.message` |
 | Esqueletos | `components/ui/skeletons.tsx` | banda y tarjetas con la forma real, `surface-muted`, `motion-safe:animate-pulse` | contenedor `aria-busy` + texto sr-only; en cada `loading.tsx` el contenedor es invisible los primeros 150 ms, así que solo se ve si la carga tarda |
 | SubmitButton | `components/submit-button.tsx` | `useFormStatus`; la variante llega por `className` | pendiente: `pendingLabel` |
-| Tarjeta de dosis | `app/(protected)/hoy/dose-item.tsx` | hora `text-time` + estado (reloj "Pendiente" / check "Tomada", mismo color) · nombre · dosis · botón de ancho completo | pendiente → "Ya la tomé" (primario); tomada → "Deshacer" (secundario). La tarjeta no cambia de fondo ni de borde |
+| Tarjeta de dosis | `app/(protected)/hoy/dose-item.tsx` | hora `text-time` + estado (reloj "Pendiente" / check "Tomada", mismo color) · nombre · dosis · botón de ancho completo | pendiente → "Ya la tomé" (primario); tomada → "Deshacer" (secundario). La tarjeta no cambia de fondo ni de borde; al tocar, el check se dibuja (`DoseStatusGlyph`) y la tarjeta se asienta (§13) |
 | Escala de síntomas | `app/(protected)/sintomas/symptom-level-field.tsx` | 5 filas de ≥ 56 px, toda la fila tocable: círculo, palabra `text-name`, "n de 5" a la derecha, todo `plum-ink` | sin elegir: `surface` + borde `line-strong`; elegida: `plum-tint` + borde `plum-ink`, check y palabra en negritas. Flechas nativas de radio. Nombre accesible "Algo, 3 de 5" |
 | Chip del historial | `symptom-history.tsx` | `rounded-full`, `plum-tint`, `plum-ink`, "Algo · 3 de 5" | idéntico para cualquier valor |
 
@@ -137,7 +137,7 @@ Aguja de brújula: un "rombo" que marca el rumbo. Punta crema al norte, sage-sof
 | Hacer | No hacer |
 |---|---|
 | "Ya la tomé" · "Pendiente" · "Tomada" · "Deshacer" | "Olvidaste tu dosis" · "¡Tómala ahora!" |
-| "Registro guardado. Puedes mostrarlo a tu equipo médico en tu próxima cita." | "Tu nivel de dolor es alto" |
+| "Gracias por contarlo. Quedó en tu registro." (igual para cualquier valor) | "Tu nivel de dolor es alto" |
 | "Si tienes dudas sobre una dosis, consulta a tu médico o farmacéutico." | "Sigue luchando" |
 | "Hoy no tienes dosis programadas." | "¡30 días seguidos!" |
 | "¿Eliminar este medicamento y sus dosis programadas?" · "No, conservar" | "¿Estás seguro?" · "Cancelar" (ambiguo en una confirmación) |
@@ -163,6 +163,7 @@ Todo copy nuevo que menciona dosis, medicamentos, síntomas o citas lleva `[PEND
 - **Estados sin color:** pendiente y tomada se distinguen por ícono, texto y botón.
 - **Sin vibración:** el feedback principal es el estado presionado (< 100 ms).
 - **D3 · Barra de pestaña deslizante (P6.5).** Revierte el rechazo de la revisión de movimiento, que la descartó por frecuencia de uso: la frecuencia pide un movimiento corto, no quitarlo. La barra confirma a dónde fuiste. Una sola barra se desliza entre columnas (`translate`, 200 ms, `ease-out-strong`, solo `motion-safe`; con reduced motion salta). La pestaña tocada se ve activa en el siguiente frame (`onNavigate`), sin esperar al servidor; `aria-current` sigue a la ruta real.
+- **D4 · Reconocimiento sereno (P10.5).** Revierte "marcar una dosis no anima nada": la regla buscaba evitar recompensas, y estas reglas lo siguen evitando (el acto, no la métrica; misma respuesta siempre; solo al tocar; sin color de estado, sonido ni vibración). Catálogo y reglas en `docs/marca.md` §3. Día cerrado: la línea "Listo por hoy." aparece si todas las dosis de hoy están `taken`; solo se anima cuando el cierre viene de un toque en esa visita (`closedByTap`), nunca al recargar. Las ilustraciones "camino y brújula" viven en `components/illustrations/` (trazo 1.25 en viewBox 48, es decir 2.5 px a 96 px: 1.75 se veía pesado a ese tamaño).
 - **Fuera de alcance de P6:**
 
 | Idea | Por qué no |
@@ -195,8 +196,14 @@ Movimiento funcional: confirma lo que la persona hizo o evita que algo aparezca 
 | Opening: aguja (`animate-opening-needle`) | 950 ms, −38° → 4° (65%) → 0° | ease-out-strong + ease-in-out final | Quieta |
 | Opening: "Rumbo" y frase (`animate-opening-title`, `-subtitle`) | 380 ms con 220 ms y 360 ms de retraso (keyframe `screen-enter`) | ease-out-strong | Visibles desde el inicio |
 | Opening: telón (`animate-opening-curtain`) | Quieto hasta 1400 ms (450 ms de pausa de lectura tras la entrada) y fundido 1 → 0 de 800 ms; total 2.2 s | ease-in-out (`--ease-in-out`) | `animate-opening-curtain-reduced`: marca estática 600 ms + fundido de 200 ms con la misma curva (0.8 s) |
+| Dosis marcada: asiento de la tarjeta (`animate-settle-a` / `-b`, alternan por toque) | 320 ms, `scale` 0.98 → 1 | ease-out-strong | Sin escala |
+| Dosis marcada: check (`DoseStatusGlyph`) | 320 ms, `stroke-dashoffset` por *transición* (no keyframe: no anima al montar y Deshacer lo recorre a la inversa); el reloj cambia por opacidad (200 ms) | ease-out-strong | Cambia sin transición |
+| Día cerrado: aguja (`RumboMark motion="day-close"`, `animate-day-close`) y línea "Listo por hoy." (`animate-day-close-line`) | Aguja 900 ms; línea 200 ms con 800 ms de espera; total 1.0 s | ease-out-strong | Queda el texto, quieto |
+| Síntomas guardados: cuaderno (`NotebookGlyph closing`, `animate-notebook-close`) | 200 ms, `scale` 0.2 → 1 desde el lomo | ease-out-strong | Solo el aviso |
+| Apoyo listo: sobre (`EnvelopeIllustration motion="close"`, `animate-envelope-close`) | 320 ms, solapa `scale` -1 → 1 | ease-out-strong | Sobre cerrado, quieto |
 
-- Nada de rebote, confeti, rachas ni movimiento como premio. Marcar una dosis no anima nada.
+- Nada de rebote, confeti, rachas ni movimiento como premio. **Desde P10.5 (D4)** marcar una dosis anima la *forma* del check y el asiento de la tarjeta, según el catálogo "Reconocimiento sereno" de `docs/marca.md` §3: confirma la acción y da cierre, sin color de estado, sonido ni vibración.
+- Reconocimiento sereno: solo al tocar (nada anima al montar ni al recargar), corto (micro ≤ 400 ms, cierre del día ≤ 1.2 s), siempre con `motion-safe` y, con reduced motion, queda el cambio de estado y el texto. "Ya se animó" vive en estado de React: sin `localStorage`, `sessionStorage` ni cookies.
 - Solo se animan `opacity`, `translate`, `scale` y `transform`. Nunca `width`, `height`, `top`, `margin` ni colores de estado. Excepción: el telón del opening termina con `visibility: hidden` (no es movimiento: evita que un telón invisible atrape toques).
 - Todo desplazamiento va detrás de `motion-safe`.
 - La entrada de pantalla usa `animation-fill-mode: backwards`: al terminar no queda `translate` que cambie el bloque contenedor de `fixed`/`sticky`. No va en un `template.tsx` (con `loading.tsx` animaría el esqueleto) y no se escalonan tarjetas.

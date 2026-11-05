@@ -29,7 +29,7 @@ export function SummarySheet({ data, tz }: { data: SummaryData; tz: string }) {
           <span className="text-body text-ink tabular-nums">{periodLabel}</span>
         </div>
         <p className="mt-3 font-serif text-title text-ink">Para mi cita</p>
-        {appointmentLine ? <p className="text-body text-ink first-letter:uppercase">{appointmentLine}</p> : null}
+        {appointmentLine ? <p className="text-body text-ink tabular-nums first-letter:uppercase">{appointmentLine}</p> : null}
       </div>
 
       <section aria-label="Periodo que cubre" className="flex flex-col gap-1 px-1 print:px-0">

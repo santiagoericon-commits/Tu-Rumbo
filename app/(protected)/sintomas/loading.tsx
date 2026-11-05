@@ -1,4 +1,4 @@
-import { HeaderSkeleton } from "@/components/ui/skeletons";
+import { CardSkeleton, HeaderSkeleton } from "@/components/ui/skeletons";
 
 export default function Loading() {
   return (
@@ -14,6 +14,8 @@ export default function Loading() {
           <div className="mt-4 h-28 rounded-control bg-surface-muted" />
           <div className="mt-4 h-13 rounded-control bg-surface-muted" />
         </div>
+        {/* Historial de 14 días: título + fecha y chip por registro. */}
+        <CardSkeleton lines={3} />
       </div>
     </div>
   );

@@ -25,7 +25,7 @@ export function LowSupplyCard({ items }: { items: LowSupplyItem[] }) {
         ))}
       </ul>
       {/* [PENDIENTE REVISIÓN PROFESIONAL] */}
-      <p className="mt-1 text-secondary text-ink-muted">Se calcula con las dosis que marcas como tomadas.</p>
+      <p className="mt-3 text-secondary text-ink-muted">Se calcula con las dosis que marcas como tomadas.</p>
       <Link href="/apoyo" className={textLink}>
         ¿Necesitas apoyo con tu medicamento?
       </Link>
@@ -36,11 +36,11 @@ export function LowSupplyCard({ items }: { items: LowSupplyItem[] }) {
 // Entrada fija y discreta a Apoyo al final de Hoy.
 export function SupportEntryCard() {
   return (
-    <section aria-labelledby="apoyo-hoy" className={`${card} flex items-start gap-4`}>
+    <section aria-labelledby="apoyo-hoy" className={`${card} flex flex-wrap items-start gap-4`}>
       <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-surface-muted text-accent">
         <HandHelpingIcon className="size-6" />
       </span>
-      <div className="min-w-0">
+      <div className="min-w-0 flex-1 basis-40">
         <h2 id="apoyo-hoy" className="text-name text-ink">
           ¿Necesitas apoyo?
         </h2>

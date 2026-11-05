@@ -7,5 +7,6 @@ export const SYMPTOM_ERROR_MESSAGES: Record<SymptomErrorCode, string> = {
   generico: "No pudimos guardar tu registro. Inténtalo de nuevo.",
 };
 
-export const SYMPTOM_SAVED_MESSAGE =
-  "Registro guardado. Puedes mostrarlo a tu equipo médico en tu próxima cita.";
+// Misma respuesta para cualquier valor (docs/marca.md §3, regla 2): reconoce el acto, no interpreta.
+// [PENDIENTE REVISIÓN PROFESIONAL]
+export const SYMPTOM_SAVED_MESSAGE = "Gracias por contarlo. Quedó en tu registro.";

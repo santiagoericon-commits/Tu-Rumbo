@@ -11,12 +11,12 @@ export function MedicationItem({ medication }: { medication: MedicationView }) {
   return (
     <li className={card}>
       <p className="text-name wrap-break-word text-ink">{medication.name}</p>
-      {medication.dosage ? <p className="text-body wrap-break-word text-ink-muted">{medication.dosage}</p> : null}
-      <p className="mt-3 flex items-start gap-2 text-body text-ink">
+      {medication.dosage ? <p className="text-secondary wrap-break-word text-ink-muted">{medication.dosage}</p> : null}
+      <p className="mt-3 flex items-start gap-2 text-body text-ink tabular-nums">
         <ClockIcon className="mt-0.5 size-6 text-ink-muted" />
         {medication.timesLabel}
       </p>
-      <p className="mt-1 text-secondary text-ink-muted">{medication.startLabel}</p>
+      <p className="mt-1 text-secondary text-ink-muted tabular-nums">{medication.startLabel}</p>
 
       <SupplyEditor medicationId={medication.id} medicationName={medication.name} supply={medication.supply} />
 
