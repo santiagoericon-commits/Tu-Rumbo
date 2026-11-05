@@ -202,3 +202,14 @@ Movimiento funcional: confirma lo que la persona hizo o evita que algo aparezca 
 - La entrada de pantalla usa `animation-fill-mode: backwards`: al terminar no queda `translate` que cambie el bloque contenedor de `fixed`/`sticky`. No va en un `template.tsx` (con `loading.tsx` animaría el esqueleto) y no se escalonan tarjetas.
 - No se repite al marcar o deshacer una dosis, al guardar síntomas ni con el `router.refresh()` de `TimeZoneSync`: esos casos reconcilian la misma raíz (verificado en navegador el 30 sept 2026). Guardar una cita usa el mismo mecanismo (Server Action + revalidación); no se probó en vivo.
 - `animation-timing-function` dentro de un keyframe va con la curva literal: Chrome ignora `var()` ahí.
+
+## 14. Impresión ("Para mi cita")
+
+La hoja de `/citas/resumen` se imprime o se guarda como PDF con `window.print()`; el diseño de papel vive en el bloque `@media print` de `app/globals.css` (`docs/marca.md` §5).
+
+- **Hoja:** carta (`@page { size: letter; margin: 16mm }`), blanco y negro. En `:root` de impresión los tokens de color pasan a blanco, negro y grises (`ink-muted` #333, `line` #999) y el acento de sección a negro; sin sombras ni animaciones. La columna `max-w-lg` de la app se libera y la hoja usa el ancho útil.
+- **Tipografía:** las variables `--text-body`, `--text-secondary` y `--text-name` pasan a 11 pt (`--text-print-body`), `--text-subtitle` (títulos de sección, serif) a 13 pt y `--text-title`/`--text-greeting` a 18 pt. Los componentes no repiten modificadores `print:`.
+- **Se oculta** con `print:hidden`: barra superior, barra inferior, botón de imprimir, formulario y enlaces de la hoja. Se conserva el footer "Rumbo no sustituye la atención médica."
+- **Estructura:** marca pequeña a la izquierda y periodo a la derecha, título serif, secciones separadas por un filete (`line`), sin tarjetas y con `break-inside: avoid` por fila. Pie de la hoja: "Registro personal hecho en Rumbo. No es un documento médico."
+- **Preguntas:** en papel sale el texto del campo tal como se ve; si está vacío, 4 renglones de 9 mm para escribir a mano.
+- **Cobertura:** el periodo impreso es el que realmente cubre (primer día con dosis o registros hasta hoy). Un hueco no se lee como dosis no tomada.

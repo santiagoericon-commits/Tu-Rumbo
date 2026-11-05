@@ -1,8 +1,10 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
+import { ClipboardListIcon } from "@/components/icons";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Notice } from "@/components/ui/notice";
 import { PageHeader } from "@/components/ui/page-header";
-import { card, cardTitle } from "@/components/ui/styles";
+import { card, cardTitle, textLink } from "@/components/ui/styles";
 import { partitionAppointments } from "@/lib/appointment-list";
 import { MAX_APPOINTMENT_OFFSET_DAYS } from "@/lib/appointment-validation";
 import { formatLongDate, formatTime } from "@/lib/date-range";
@@ -79,6 +81,23 @@ export default async function CitasPage() {
             ))}
           </ul>
         )}
+      </section>
+
+      {/* Entrada a la hoja imprimible (P10). Identidad propia de Rumbo, sin color nuevo. */}
+      <section aria-labelledby="para-mi-cita" className={`${card} flex items-start gap-4`}>
+        <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-surface-muted text-accent">
+          <ClipboardListIcon className="size-6" />
+        </span>
+        <div className="min-w-0">
+          <h2 id="para-mi-cita" className="text-name text-ink">
+            Para mi cita
+          </h2>
+          {/* [PENDIENTE REVISIÓN PROFESIONAL] */}
+          <p className="text-secondary text-ink-muted">Un resumen de tu registro para llevar a tu consulta.</p>
+          <Link href="/citas/resumen" className={textLink}>
+            Preparar resumen
+          </Link>
+        </div>
       </section>
 
       <section id="agregar-cita" aria-labelledby="agregar-cita-titulo" className={`${card} mt-4`}>

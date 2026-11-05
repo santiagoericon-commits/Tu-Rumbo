@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseAppointmentForm } from "@/lib/appointment-validation";
+import { parseAppointmentForm, parseAppointmentNotesForm } from "@/lib/appointment-validation";
 import { addDaysIso } from "@/lib/local-time";
 
 const TODAY = "2026-09-29";
@@ -94,5 +94,60 @@ describe("parseAppointmentForm", () => {
     const file = new Blob(["x"], { type: "text/plain" });
     expect(parseAppointmentForm(form({ ...valid, title: file }), TODAY)).toBeNull();
     expect(parseAppointmentForm(form({ ...valid, notes: file }), TODAY)).toBeNull();
+  });
+});
+
+describe("parseAppointmentNotesForm", () => {
+  const ID = "6f1b7a52-3c0e-4d6a-9d1e-0a7b9f2c4e11";
+  const notesForm = (entries: Entries): FormData => form({ appointmentId: ID, notes: "", ...entries });
+
+  it("acepta un uuid y recorta las notas", () => {
+    expect(parseAppointmentNotesForm(notesForm({ notes: "  ¿Puedo viajar?  " }))).toEqual({
+      appointmentId: ID,
+      notes: "¿Puedo viajar?",
+    });
+  });
+
+  it("notas vacías o solo espacios quedan en null", () => {
+    expect(parseAppointmentNotesForm(notesForm({ notes: "" }))?.notes).toBeNull();
+    expect(parseAppointmentNotesForm(notesForm({ notes: "   \n  " }))?.notes).toBeNull();
+  });
+
+  it("sin campo de notas se toma como vacío", () => {
+    const data = new FormData();
+    data.append("appointmentId", ID);
+    expect(parseAppointmentNotesForm(data)).toEqual({ appointmentId: ID, notes: null });
+  });
+
+  it.each([
+    ["no es uuid", "no-es-uuid"],
+    ["vacío", ""],
+    ["inyección", "1' or '1'='1"],
+  ])("rechaza un id que %s", (_label, appointmentId) => {
+    expect(parseAppointmentNotesForm(notesForm({ appointmentId }))).toBeNull();
+  });
+
+  it("rechaza si falta el id", () => {
+    const data = new FormData();
+    data.append("notes", "hola");
+    expect(parseAppointmentNotesForm(data)).toBeNull();
+  });
+
+  it("300 caracteres pasan y 301 no", () => {
+    expect(parseAppointmentNotesForm(notesForm({ notes: "a".repeat(300) }))).not.toBeNull();
+    expect(parseAppointmentNotesForm(notesForm({ notes: "a".repeat(301) }))).toBeNull();
+  });
+
+  it("los saltos de línea \\r\\n cuentan como uno", () => {
+    const text = "a\r\n".repeat(100) + "b";
+    expect(parseAppointmentNotesForm(notesForm({ notes: text }))?.notes).toBe(`${"a\n".repeat(100)}b`);
+    // 150 × "a\r\n" = 300 normalizados + "b" = 301: se rechaza
+    expect(parseAppointmentNotesForm(notesForm({ notes: "a\r\n".repeat(150) + "b" }))).toBeNull();
+  });
+
+  it("FormData manipulada: un archivo en lugar de texto", () => {
+    const file = new Blob(["x"], { type: "text/plain" });
+    expect(parseAppointmentNotesForm(notesForm({ notes: file }))).toBeNull();
+    expect(parseAppointmentNotesForm(notesForm({ appointmentId: file }))).toBeNull();
   });
 });
