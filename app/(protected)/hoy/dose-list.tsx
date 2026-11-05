@@ -12,14 +12,13 @@ type DoseListProps = {
   onTap?: (next: SettableDoseStatus) => void;
 };
 
-// Resumen y tarjetas. El estado optimista vive en TodayDoses, que también pinta el encabezado.
+// Resumen de dosis programadas y tarjetas. El estado optimista vive en TodayDoses, que también pinta el encabezado.
 export function DoseList({ doses, applyOptimistic, updateStatus, onTap }: DoseListProps) {
-  const taken = doses.filter((dose) => dose.status === "taken").length;
-
   return (
     <>
-      <p aria-live="polite" className="px-1 text-body text-ink-muted tabular-nums">
-        {formatDoseSummary(taken, doses.length)}
+      {/* Solo cuántas dosis hay hoy: no cambia al marcar y no mide avance. */}
+      <p className="px-1 text-body text-ink-muted tabular-nums">
+        {formatDoseSummary(doses.length)}
       </p>
       <ul className="flex flex-col gap-4">
         {doses.map((dose) => (

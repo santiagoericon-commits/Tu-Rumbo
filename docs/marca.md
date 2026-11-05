@@ -58,7 +58,7 @@ Cada acción de la persona recibe una respuesta pequeña, inmediata y siempre ig
 | Dosis marcada | "Ya la tomé" | El check se dibuja (trazo, 320 ms) y la tarjeta se asienta (`scale` 0.98 → 1) | "Tomada" (ya existe) | 1 |
 | Deshacer | "Deshacer" | Mismo movimiento a la inversa, igual de calmo | "Pendiente" | 1 |
 | **Día cerrado** | Se marca la última dosis de hoy | La aguja del encabezado de Hoy gira a norte y se asienta; aparece una línea debajo | "Listo por hoy." | 1 |
-| Síntomas guardados | Guardar el registro del día | El cuaderno del encabezado "cierra" su página (200 ms) | "Gracias por contarlo. Quedó en tu registro." | 1 |
+| Síntomas guardados | Guardar el registro del día | El cuaderno del aviso, junto al botón de guardar (no en el encabezado: a 390 px queda fuera de la vista), "cierra" su página (200 ms) | "Gracias por contarlo. Quedó en tu registro." | 1 |
 | Cita pasada | La fecha de la cita ya pasó | La tarjeta queda "Ya fue tu cita" con un ícono de calendario quieto (un check se leería como "asististe"; Rumbo no lo sabe) y un enlace | "¿Quieres anotar algo de lo que te dijeron?" | 1 |
 | Apoyo listo | Elegir el tipo de apoyo | El sobre de la tarjeta se cierra y aparece la vista previa | "Tu mensaje está listo. Tú decides si lo envías." | 1 |
 | Primer medicamento | Guardar el primero | Entra la tarjeta con la ilustración de camino, una sola vez por acción | "Listo. Aquí verás tus dosis de cada día." | 1 |
