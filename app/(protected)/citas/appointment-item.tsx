@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { CalendarIcon } from "@/components/icons";
 import { DeleteConfirm } from "@/components/ui/delete-confirm";
+import { textLink } from "@/components/ui/styles";
 import { deleteAppointmentAction } from "./actions";
 import type { AppointmentView } from "./types";
 
@@ -23,6 +25,13 @@ export function AppointmentItem({ appointment, past = false }: AppointmentItemPr
       {appointment.notes ? (
         <p className="mt-2 whitespace-pre-line wrap-break-word text-secondary text-ink-muted">{appointment.notes}</p>
       ) : null}
+
+      {past ? null : (
+        // [PENDIENTE REVISIÓN PROFESIONAL]
+        <Link href={`/citas/resumen?cita=${appointment.id}`} className={`${textLink} mt-1`}>
+          Preparar resumen
+        </Link>
+      )}
 
       <DeleteConfirm
         question="¿Eliminar esta cita?"

@@ -39,7 +39,7 @@ export function TabBar() {
     <nav
       aria-label="Secciones"
       data-app-tabbar
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface pb-[calc(8px+env(safe-area-inset-bottom))]"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface print:hidden pb-[calc(8px+env(safe-area-inset-bottom))]"
     >
       <div className="relative mx-auto max-w-lg">
         <ul className="grid grid-cols-4">

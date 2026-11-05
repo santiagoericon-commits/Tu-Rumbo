@@ -1,4 +1,5 @@
 import { normalizeMultiline } from "@/lib/form-text";
+import { isUuid } from "@/lib/ids";
 import { daysBetween, TIME_PATTERN } from "@/lib/medication-validation";
 
 // Validación en servidor del formulario de cita. Fecha y hora son de pared en la
@@ -41,4 +42,19 @@ export function parseAppointmentForm(formData: FormData, todayLocal: string): Ap
   if (notes.length > MAX_APPOINTMENT_NOTES_LENGTH) return null;
 
   return { title, date: rawDate, time: rawTime, notes: notes === "" ? null : notes };
+}
+
+export type AppointmentNotesInput = { appointmentId: string; notes: string | null };
+
+// Edición de solo las notas de una cita ("Lo que quiero preguntar" en Para mi cita).
+// FormData manipulada devuelve null. El id solo identifica la fila: RLS y user_id la acotan.
+export function parseAppointmentNotesForm(formData: FormData): AppointmentNotesInput | null {
+  const rawId = formData.get("appointmentId");
+  const rawNotes = formData.get("notes") ?? "";
+  if (!isUuid(rawId) || typeof rawNotes !== "string") return null;
+
+  const notes = normalizeMultiline(rawNotes);
+  if (notes.length > MAX_APPOINTMENT_NOTES_LENGTH) return null;
+
+  return { appointmentId: rawId, notes: notes === "" ? null : notes };
 }

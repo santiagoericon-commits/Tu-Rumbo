@@ -61,6 +61,15 @@
   --text-tab: 0.875rem;
   --text-tab--line-height: 1.125rem;
   --text-tab--font-weight: 600;
+  /* Solo para la hoja impresa "Para mi cita" (docs/marca.md §5): puntos tipográficos, carta. */
+  --text-print-title: 18pt;
+  --text-print-title--line-height: 22pt;
+  --text-print-title--font-weight: 600;
+  --text-print-heading: 13pt;
+  --text-print-heading--line-height: 17pt;
+  --text-print-heading--font-weight: 600;
+  --text-print-body: 11pt;
+  --text-print-body--line-height: 15pt;
 
   --radius-card: 16px;
   --radius-control: 12px;
@@ -230,5 +239,76 @@ html[data-opening="done"] [data-opening-curtain] {
 
   [id] {
     scroll-margin-top: 16px;
+  }
+}
+
+/* Impresión (Para mi cita, docs/marca.md §5): blanco y negro sobre papel carta. Los tokens de
+   color pasan a grises; la barra superior y la inferior llevan print:hidden. El footer del root
+   layout se conserva. Las utilidades text-print-* fijan los tamaños en pt. */
+@media print {
+  @page {
+    size: letter;
+    margin: 16mm;
+  }
+
+  :root {
+    --color-canvas: #ffffff;
+    --color-surface: #ffffff;
+    --color-surface-muted: #ffffff;
+    --color-ink: #000000;
+    --color-ink-muted: #333333;
+    --color-line: #999999;
+    --color-line-strong: #999999;
+    --color-accent: #000000;
+    --color-plum-ink: #000000;
+    --color-plum-tint: #ffffff;
+
+    /* Las utilidades text-* leen estas variables: toda la hoja baja a 11 pt (cuerpo), 13 pt
+       (títulos de sección) y 18 pt (título) sin repetir modificadores print: en cada elemento. */
+    --text-body: var(--text-print-body);
+    --text-body--line-height: var(--text-print-body--line-height);
+    --text-secondary: var(--text-print-body);
+    --text-secondary--line-height: var(--text-print-body--line-height);
+    --text-name: var(--text-print-body);
+    --text-name--line-height: var(--text-print-body--line-height);
+    --text-subtitle: var(--text-print-heading);
+    --text-subtitle--line-height: var(--text-print-heading--line-height);
+    --text-title: var(--text-print-title);
+    --text-title--line-height: var(--text-print-title--line-height);
+    --text-greeting: var(--text-print-title);
+    --text-greeting--line-height: var(--text-print-title--line-height);
+  }
+
+  /* La columna de la app (max-w-lg) es de pantalla: en papel usa todo el ancho útil de la hoja. */
+  #contenido {
+    max-width: none;
+    padding-inline: 0;
+  }
+
+  html,
+  body {
+    background: #ffffff;
+    color: #000000;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  body {
+    font-size: var(--text-print-body);
+    line-height: var(--text-print-body--line-height);
+  }
+
+  /* Sin reserva para la barra inferior (está oculta). */
+  body:has([data-app-tabbar]) {
+    padding-bottom: 0;
+  }
+
+  * {
+    box-shadow: none !important;
+    animation: none !important;
+  }
+
+  [id] {
+    scroll-margin-top: 0;
   }
 }
