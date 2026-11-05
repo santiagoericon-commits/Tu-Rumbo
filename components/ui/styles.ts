@@ -20,9 +20,9 @@ export const textLink =
 
 export const fieldLabel = "flex flex-col gap-2 text-body text-ink";
 
-// La sombra interior tapa el azul del autocompletado del navegador con el token surface.
+// tabular-nums: horas, fechas y cantidades no bailan al escribir. La sombra interior tapa el azul del autocompletado del navegador con el token surface.
 export const field =
-  "min-h-13 w-full rounded-control border-2 border-line-strong bg-surface px-4 text-body text-ink autofill:shadow-[inset_0_0_0_100px_var(--color-surface)]";
+  "min-h-13 w-full rounded-control border-2 border-line-strong bg-surface px-4 text-body text-ink tabular-nums autofill:shadow-[inset_0_0_0_100px_var(--color-surface)]";
 
 export const card = "rounded-card bg-surface p-5 shadow-card";
 

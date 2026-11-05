@@ -102,6 +102,22 @@
   --animate-opening-title: screen-enter 380ms var(--ease-out-strong) 220ms backwards;
   --animate-opening-subtitle: screen-enter 380ms var(--ease-out-strong) 360ms backwards;
 
+  /* Reconocimiento sereno (docs/marca.md §3). Todo se usa detrás de motion-safe: y solo lo
+     dispara un toque o una prop explícita; nada anima al montar ni al recargar por sí solo. */
+  /* Asiento de la tarjeta de dosis al tocar (scale 0.98 → 1). Dos nombres con el mismo keyframe:
+     alternar a ↔ b cambia animation-name y reinicia la animación en cada toque. */
+  --animate-settle-a: settle-a 320ms var(--ease-out-strong) backwards;
+  --animate-settle-b: settle-b 320ms var(--ease-out-strong) backwards;
+  /* Día cerrado: la aguja de RumboMark (motion="day-close") gira a norte y se asienta (900 ms)... */
+  --animate-day-close: needle-settle 900ms var(--ease-out-strong) both;
+  /* ...y la línea "Listo por hoy." entra cuando la aguja ya llegó: 800 ms de espera + 200 ms
+     (total 1.0 s ≤ 1.2 s). backwards: invisible durante la espera. */
+  --animate-day-close-line: day-close-line 200ms var(--ease-out-strong) 800ms backwards;
+  /* Síntomas guardados: la tapa del cuaderno (NotebookGlyph closing) se cierra desde el lomo. */
+  --animate-notebook-close: notebook-close 200ms var(--ease-out-strong) backwards;
+  /* Apoyo listo: la solapa del sobre (EnvelopeIllustration motion="close") baja desde abierta. */
+  --animate-envelope-close: envelope-close 320ms var(--ease-out-strong) backwards;
+
   /* La curva aplica por tramo: la del 65% (ease-in-out fuerte) gobierna solo 5° → 0° y sale del
      reposo al dar la vuelta, sin quiebre de velocidad. Va literal: Chrome ignora var() como
      animation-timing-function dentro de un keyframe (verificado cuadro por cuadro). */
@@ -122,6 +138,40 @@
     from {
       opacity: 0;
       translate: 0 6px;
+    }
+  }
+
+  @keyframes settle-a {
+    from {
+      scale: 0.98;
+    }
+  }
+
+  @keyframes settle-b {
+    from {
+      scale: 0.98;
+    }
+  }
+
+  @keyframes day-close-line {
+    from {
+      opacity: 0;
+      translate: 0 4px;
+    }
+  }
+
+  /* La tapa entra plegada contra el lomo (origen a la izquierda, en el componente). */
+  @keyframes notebook-close {
+    from {
+      opacity: 0;
+      scale: 0.2 1;
+    }
+  }
+
+  /* La solapa empieza abierta (reflejada hacia arriba sobre su borde superior) y baja. */
+  @keyframes envelope-close {
+    from {
+      scale: 1 -1;
     }
   }
 
