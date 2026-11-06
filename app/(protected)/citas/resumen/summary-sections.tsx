@@ -2,16 +2,18 @@ import { levelText } from "@/app/(protected)/sintomas/level-labels";
 import { formatCalendarDate } from "@/lib/schedule-format";
 import { formatTimeList, type UnmarkedGroup } from "@/lib/visit-summary";
 import type { SummaryData } from "./load-summary";
+import { CompactEmpty } from "../../compact-empty";
 import { SheetSection } from "./sheet-section";
 
 const hint = "mt-2 text-secondary text-ink-muted";
+const emptyText = "text-secondary text-ink-muted";
 
 // Medicamentos tal como se capturaron: nombre, dosis y horarios. Sin sugerir ni validar nada.
 export function MedicationsSection({ medications }: { medications: SummaryData["medications"] }) {
   return (
     <SheetSection id="resumen-medicamentos" title="Mis medicamentos">
       {medications.length === 0 ? (
-        <p className={hint}>No tienes medicamentos registrados.</p>
+        <CompactEmpty textClassName={emptyText}>No tienes medicamentos registrados.</CompactEmpty>
       ) : (
         <ul className="mt-3 flex flex-col gap-3 print:mt-1 print:gap-2">
           {medications.map((medication) => (
@@ -37,7 +39,7 @@ export function UnmarkedDosesSection({ groups, capped, tz }: UnmarkedProps) {
       {/* [PENDIENTE REVISIÓN PROFESIONAL] */}
       <p className={hint}>Son las dosis que no marqué en Rumbo.</p>
       {groups.length === 0 ? (
-        <p className={hint}>En este periodo no hay dosis sin marcar.</p>
+        <CompactEmpty textClassName={emptyText}>En este periodo no hay dosis sin marcar.</CompactEmpty>
       ) : (
         <ul className="mt-3 flex flex-col gap-4 print:mt-1 print:gap-2">
           {groups.map((group) => (
@@ -48,7 +50,7 @@ export function UnmarkedDosesSection({ groups, capped, tz }: UnmarkedProps) {
               </p>
               <ul className="mt-1 flex flex-col gap-1">
                 {group.days.map((day) => (
-                  <li key={day.date} className="text-secondary text-ink first-letter:uppercase">
+                  <li key={day.date} className="text-secondary text-ink tabular-nums first-letter:uppercase">
                     <span>{formatCalendarDate(day.date)}</span>
                     <span className="text-ink-muted tabular-nums">: {formatTimeList(day.instants, tz)}</span>
                   </li>
@@ -73,7 +75,7 @@ export function SymptomLogSection({ logs }: { logs: SummaryData["logs"] }) {
         Respuesta a «¿Qué tanto te molestaron los síntomas?», de Nada (1 de 5) a Mucho (5 de 5).
       </p>
       {logs.length === 0 ? (
-        <p className={hint}>No hay registros de síntomas en este periodo.</p>
+        <CompactEmpty textClassName={emptyText}>No hay registros de síntomas en este periodo.</CompactEmpty>
       ) : (
         <ul className="mt-3 divide-y divide-line print:mt-1">
           {logs.map((log) => (
@@ -81,7 +83,7 @@ export function SymptomLogSection({ logs }: { logs: SummaryData["logs"] }) {
               key={log.id}
               className="flex flex-col items-start gap-2 py-4 first:pt-0 last:pb-0 print:flex-row print:flex-wrap print:items-baseline print:gap-x-3 print:gap-y-0 print:py-2 print:break-inside-avoid"
             >
-              <p className="text-body text-ink first-letter:uppercase">
+              <p className="text-body text-ink tabular-nums first-letter:uppercase">
                 <time dateTime={log.logDate}>{log.dateLabel}</time>
               </p>
               <p className="rounded-full bg-plum-tint px-3 py-1 text-secondary text-plum-ink print:p-0 print:text-ink">

@@ -8,6 +8,7 @@ import { Notice } from "@/components/ui/notice";
 import { buttonPrimary, buttonQuiet, buttonSecondary, enterFromAbove, textLink } from "@/components/ui/styles";
 import { SUPPLY_ERROR_MESSAGES, SUPPLY_SAVED_MESSAGE, type SupplyErrorCode } from "@/lib/medication-messages";
 import { updateSupplyAction } from "./actions";
+import { useReturnFocus } from "../use-return-focus";
 import { SupplyCountField } from "./supply-count-field";
 import type { SupplyView } from "./types";
 
@@ -22,11 +23,11 @@ export function SupplyEditor({ medicationId, medicationName, supply }: SupplyEdi
   // React reinicia el formulario al terminar la acción: lo enviado se guarda aquí para recuperarlo si falla.
   const [draft, setDraft] = useState<{ value: string; version: number } | null>(null);
   const toggle = useRef<HTMLButtonElement>(null);
+  useReturnFocus(editing, toggle);
 
   function close() {
     setEditing(false);
     setDraft(null);
-    requestAnimationFrame(() => toggle.current?.focus());
   }
 
   async function save(formData: FormData) {

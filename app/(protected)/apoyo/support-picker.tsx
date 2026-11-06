@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { BusIcon, CircleCheckIcon, ClipboardListIcon, MessageCircleIcon, PillIcon, type IconComponent } from "@/components/icons";
+import { EnvelopeIllustration } from "@/components/illustrations";
 import { Notice } from "@/components/ui/notice";
 import { buttonPrimary, card, enterFromAbove } from "@/components/ui/styles";
 import { buildSupportMessage, SUPPORT_OPTIONS, type SupportOptionKey } from "@/lib/support-link";
@@ -61,7 +62,14 @@ export function SupportPicker({ links }: { links: Record<SupportOptionKey, strin
       <div role="status">
         {selected ? (
           <section aria-label="Vista previa del mensaje" className={`flex flex-col gap-4 ${enterFromAbove}`}>
-            {links ? <p className="text-body text-ink">Tu mensaje está listo. Tú decides si lo envías.</p> : null}
+            {links ? (
+              <div className="flex flex-wrap items-center gap-4">
+                {/* El sobre se cierra en cada elección (key = opción, que es un toque); sin movimiento con
+                    reduced motion. Sin número configurado no hay mensaje listo, así que no hay sobre. */}
+                <EnvelopeIllustration key={selected} motion="close" className="size-16" />
+                <p className="min-w-0 flex-1 basis-40 text-body text-ink">Tu mensaje está listo. Tú decides si lo envías.</p>
+              </div>
+            ) : null}
             <blockquote className="rounded-card border-2 border-line-strong bg-surface p-4 text-body text-ink">
               {buildSupportMessage(selected)}
             </blockquote>

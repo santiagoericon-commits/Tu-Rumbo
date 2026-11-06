@@ -1,4 +1,5 @@
-// Siluetas de carga con la forma de las tarjetas reales. El contenedor pone aria-hidden y animate-pulse.
+// Siluetas de carga con la forma de las tarjetas reales (la primera línea mide lo que la hora o el
+// nombre, 28 px). El contenedor pone aria-hidden y animate-pulse.
 export function HeaderSkeleton() {
   return (
     <div className="flex items-center gap-4 rounded-card bg-surface-muted p-5">
@@ -15,7 +16,7 @@ export function CardSkeleton({ lines = 2, action = false }: { lines?: number; ac
   return (
     <div className="flex flex-col gap-3 rounded-card bg-surface p-5 shadow-card">
       {Array.from({ length: lines }, (_, i) => (
-        <div key={i} className={`h-6 max-w-full rounded-control bg-surface-muted ${i === 0 ? "w-40" : "w-56"}`} />
+        <div key={i} className={`max-w-full rounded-control bg-surface-muted ${i === 0 ? "h-7 w-40" : "h-6 w-56"}`} />
       ))}
       {action ? <div className="mt-1 h-13 w-full rounded-control bg-surface-muted" /> : null}
     </div>

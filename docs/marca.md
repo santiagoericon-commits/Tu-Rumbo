@@ -58,8 +58,8 @@ Cada acción de la persona recibe una respuesta pequeña, inmediata y siempre ig
 | Dosis marcada | "Ya la tomé" | El check se dibuja (trazo, 320 ms) y la tarjeta se asienta (`scale` 0.98 → 1) | "Tomada" (ya existe) | 1 |
 | Deshacer | "Deshacer" | Mismo movimiento a la inversa, igual de calmo | "Pendiente" | 1 |
 | **Día cerrado** | Se marca la última dosis de hoy | La aguja del encabezado de Hoy gira a norte y se asienta; aparece una línea debajo | "Listo por hoy." | 1 |
-| Síntomas guardados | Guardar el registro del día | El cuaderno del encabezado "cierra" su página (200 ms) | "Gracias por contarlo. Quedó en tu registro." | 1 |
-| Cita pasada | La fecha de la cita ya pasó | La tarjeta queda "Ya fue tu cita" con check suave y un enlace | "¿Quieres anotar algo de lo que te dijeron?" | 1 |
+| Síntomas guardados | Guardar el registro del día | El cuaderno del aviso, junto al botón de guardar (no en el encabezado: a 390 px queda fuera de la vista), "cierra" su página (200 ms) | "Gracias por contarlo. Quedó en tu registro." | 1 |
+| Cita pasada | La fecha de la cita ya pasó | La tarjeta queda "Ya fue tu cita" con un ícono de calendario quieto (un check se leería como "asististe"; Rumbo no lo sabe) y un enlace | "¿Quieres anotar algo de lo que te dijeron?" | 1 |
 | Apoyo listo | Elegir el tipo de apoyo | El sobre de la tarjeta se cierra y aparece la vista previa | "Tu mensaje está listo. Tú decides si lo envías." | 1 |
 | Primer medicamento | Guardar el primero | Entra la tarjeta con la ilustración de camino, una sola vez por acción | "Listo. Aquí verás tus dosis de cada día." | 1 |
 | Hitos de uso | Una semana o un mes desde que la persona creó su cuenta | Tarjeta quieta en Hoy, se cierra con "Gracias" | "Hoy hace un mes que usas Rumbo." | 1 |
@@ -110,7 +110,7 @@ Después de la tarea de marcar dosis: "Del 1 al 5, ¿qué tan bien te hizo senti
 ## 6. Ilustraciones
 
 Una sola familia: **camino y brújula**.
-- Trazo de 1.75 como los íconos (Lucide), puntas redondeadas, `accent` para el trazo y `sage-soft` para un solo relleno plano.
+- Trazo equivalente a los íconos (Lucide), puntas redondeadas (en el viewBox de 48 es 1.25: a 96 px da 2.5 px, porque 1.75 se veía pesado), `accent` para el trazo y `sage-soft` para un solo relleno plano.
 - Sin personas, caras, órganos, listones, cruces médicas ni corazones.
 - Juego inicial: brújula (cierre del día), camino con señal (primer medicamento, estados vacíos), sobre (apoyo), hoja con renglones (para mi cita), calendario con hoja (cita pasada).
 - SVG en línea como componentes en `components/illustrations/`, con `aria-hidden` y texto al lado.

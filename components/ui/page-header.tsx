@@ -23,7 +23,7 @@ export function PageHeader({ section, title, size = "title", subtitle, children 
         </span>
         <div className="min-w-0 flex-1 basis-40">
           <h1 className={`font-serif ${titleClass} wrap-break-word text-ink`}>{title}</h1>
-          {subtitle ? <p className="text-body text-ink-muted first-letter:uppercase">{subtitle}</p> : null}
+          {subtitle ? <p className="text-body text-ink-muted tabular-nums first-letter:uppercase">{subtitle}</p> : null}
         </div>
       </div>
       {children}

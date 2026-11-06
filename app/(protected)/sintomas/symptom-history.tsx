@@ -1,4 +1,5 @@
 import { card, cardTitle } from "@/components/ui/styles";
+import { CompactEmpty } from "../compact-empty";
 import { levelText } from "./level-labels";
 import type { SymptomLogView } from "./types";
 
@@ -12,12 +13,12 @@ export function SymptomHistory({ logs }: { logs: SymptomLogView[] }) {
       </h2>
 
       {logs.length === 0 ? (
-        <p className="mt-2 text-body text-ink-muted">Aún no tienes registros en los últimos 14 días.</p>
+        <CompactEmpty>Aún no tienes registros en los últimos 14 días.</CompactEmpty>
       ) : (
         <ul className="mt-3 divide-y divide-line">
           {logs.map((log) => (
             <li key={log.id} className="flex flex-col items-start gap-2 py-4 last:pb-0">
-              <p className="text-body text-ink first-letter:uppercase">
+              <p className="text-body text-ink tabular-nums first-letter:uppercase">
                 <time dateTime={log.logDate}>{log.dateLabel}</time>
               </p>
               {/* [PENDIENTE REVISIÓN PROFESIONAL] */}

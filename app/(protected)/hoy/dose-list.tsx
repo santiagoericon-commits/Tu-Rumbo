@@ -1,28 +1,34 @@
 "use client";
 
-import { useOptimistic } from "react";
 import { formatDoseSummary } from "@/lib/dose-summary";
 import { DoseItem } from "./dose-item";
-import type { DoseUpdate, DoseView } from "./types";
+import type { SettableDoseStatus } from "@/lib/dose-status";
+import type { DoseUpdate, DoseView, UpdateDoseStatus } from "./types";
 
-// El estado optimista solo vive mientras la acción está en curso. Al terminar,
-// React vuelve a `doses` del servidor: si la acción falló, nada queda marcado.
-function applyUpdate(state: DoseView[], update: DoseUpdate): DoseView[] {
-  return state.map((dose) => (dose.id === update.id ? { ...dose, status: update.status } : dose));
-}
+type DoseListProps = {
+  doses: DoseView[];
+  applyOptimistic: (update: DoseUpdate) => void;
+  updateStatus: UpdateDoseStatus;
+  onTap?: (next: SettableDoseStatus) => void;
+};
 
-export function DoseList({ doses }: { doses: DoseView[] }) {
-  const [optimisticDoses, applyOptimistic] = useOptimistic(doses, applyUpdate);
-  const taken = optimisticDoses.filter((dose) => dose.status === "taken").length;
-
+// Resumen de dosis programadas y tarjetas. El estado optimista vive en TodayDoses, que también pinta el encabezado.
+export function DoseList({ doses, applyOptimistic, updateStatus, onTap }: DoseListProps) {
   return (
     <>
-      <p aria-live="polite" className="px-1 text-body text-ink-muted">
-        {formatDoseSummary(taken, optimisticDoses.length)}
+      {/* Solo cuántas dosis hay hoy: no cambia al marcar y no mide avance. */}
+      <p className="px-1 text-body text-ink-muted tabular-nums">
+        {formatDoseSummary(doses.length)}
       </p>
       <ul className="flex flex-col gap-4">
-        {optimisticDoses.map((dose) => (
-          <DoseItem key={dose.id} dose={dose} applyOptimistic={applyOptimistic} />
+        {doses.map((dose) => (
+          <DoseItem
+            key={dose.id}
+            dose={dose}
+            applyOptimistic={applyOptimistic}
+            updateStatus={updateStatus}
+            onTap={onTap}
+          />
         ))}
       </ul>
     </>

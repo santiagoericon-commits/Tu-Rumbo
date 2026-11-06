@@ -7,6 +7,7 @@ import { addDaysIso, formatLocalDate } from "@/lib/local-time";
 import { formatCalendarDate } from "@/lib/schedule-format";
 import { createClient } from "@/lib/supabase/server";
 import { getUserTimeZone } from "@/lib/timezone.server";
+import { saveSymptomLogAction } from "./actions";
 import { SafetyNote } from "./safety-note";
 import { SymptomForm } from "./symptom-form";
 import { SymptomHistory } from "./symptom-history";
@@ -70,7 +71,7 @@ export default async function SintomasPage() {
           <h2 id="registro-hoy" className={cardTitle}>
             Tu registro de hoy
           </h2>
-          <SymptomForm todayLog={todayLog} />
+          <SymptomForm todayLog={todayLog} saveAction={saveSymptomLogAction} />
         </section>
       )}
 

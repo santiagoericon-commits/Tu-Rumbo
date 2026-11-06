@@ -1,11 +1,14 @@
 // Marca de Rumbo: aguja de brújula (un "rombo" que marca el rumbo). Mismo dibujo que app/icon.svg,
 // pintado con tokens. `settle` asienta la aguja una sola vez al cargar (solo en /login, con motion-safe);
-// `opening` es la calibración del telón de bienvenida (components/app-shell/opening-intro.tsx).
-type NeedleMotion = "settle" | "opening";
+// `opening` es la calibración del telón de bienvenida (components/app-shell/opening-intro.tsx);
+// `day-close` gira la aguja a norte al cerrar el día en /hoy (solo cuando la persona marca la última
+// dosis; quien la usa decide pasarla). Sin `motion`, la aguja queda quieta.
+export type NeedleMotion = "settle" | "opening" | "day-close";
 
 const needleMotion: Record<NeedleMotion, string> = {
   settle: "motion-safe:animate-needle-settle",
   opening: "motion-safe:animate-opening-needle",
+  "day-close": "motion-safe:animate-day-close",
 };
 
 export function RumboMark({ className = "", motion }: { className?: string; motion?: NeedleMotion }) {

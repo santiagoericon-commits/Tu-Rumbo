@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ClipboardListIcon } from "@/components/icons";
+import { CalendarSheetIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Notice } from "@/components/ui/notice";
 import { PageHeader } from "@/components/ui/page-header";
@@ -11,6 +12,7 @@ import { formatLongDate, formatTime } from "@/lib/date-range";
 import { addDaysIso, formatLocalDate } from "@/lib/local-time";
 import { createClient } from "@/lib/supabase/server";
 import { getUserTimeZone } from "@/lib/timezone.server";
+import { updateAppointmentNotesAction } from "./actions";
 import { AppointmentForm } from "./appointment-form";
 import { AppointmentItem } from "./appointment-item";
 import type { AppointmentView } from "./types";
@@ -70,6 +72,7 @@ export default async function CitasPage() {
           // [PENDIENTE REVISIÓN PROFESIONAL]
           <EmptyState
             section="citas"
+            illustration={<CalendarSheetIllustration />}
             title="No tienes citas próximas."
             text="Cuando tengas un estudio de control, anótalo aquí para tenerlo a la mano."
             action={{ href: "#agregar-cita", label: "Agregar cita" }}
@@ -77,18 +80,18 @@ export default async function CitasPage() {
         ) : (
           <ul className="flex flex-col gap-4">
             {upcoming.map((appointment) => (
-              <AppointmentItem key={appointment.id} appointment={appointment} />
+              <AppointmentItem key={appointment.id} appointment={appointment} updateNotes={updateAppointmentNotesAction} />
             ))}
           </ul>
         )}
       </section>
 
       {/* Entrada a la hoja imprimible (P10). Identidad propia de Rumbo, sin color nuevo. */}
-      <section aria-labelledby="para-mi-cita" className={`${card} flex items-start gap-4`}>
+      <section aria-labelledby="para-mi-cita" className={`${card} flex flex-wrap items-start gap-4`}>
         <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-surface-muted text-accent">
           <ClipboardListIcon className="size-6" />
         </span>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1 basis-40">
           <h2 id="para-mi-cita" className="text-name text-ink">
             Para mi cita
           </h2>
@@ -114,7 +117,7 @@ export default async function CitasPage() {
           </h2>
           <ul className="flex flex-col gap-4">
             {past.map((appointment) => (
-              <AppointmentItem key={appointment.id} appointment={appointment} past />
+              <AppointmentItem key={appointment.id} appointment={appointment} past updateNotes={updateAppointmentNotesAction} />
             ))}
           </ul>
         </section>

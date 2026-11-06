@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { PathSignIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Notice } from "@/components/ui/notice";
 import { PageHeader } from "@/components/ui/page-header";
@@ -71,6 +72,7 @@ export default async function MedicamentosPage() {
         // [PENDIENTE REVISIÓN PROFESIONAL]
         <EmptyState
           section="medicamentos"
+          illustration={<PathSignIllustration />}
           title="Todavía no hay medicamentos."
           text="Agrega el primero con los datos de tu receta."
           action={{ href: "#agregar-medicamento", label: "Agregar medicamento" }}
@@ -87,7 +89,7 @@ export default async function MedicamentosPage() {
         <h2 id="agregar-medicamento-titulo" className={cardTitle}>
           Agregar medicamento
         </h2>
-        <MedicationForm todayLocal={todayLocal} maxStartDate={maxStartDate} />
+        <MedicationForm todayLocal={todayLocal} maxStartDate={maxStartDate} isFirst={!error && medications.length === 0} />
       </section>
     </div>
   );
