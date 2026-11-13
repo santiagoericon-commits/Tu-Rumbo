@@ -73,6 +73,7 @@ export function SupportPicker({ links }: { links: Record<SupportOptionKey, strin
             <blockquote className="rounded-card border-2 border-line-strong bg-surface p-4 text-body text-ink">
               {buildSupportMessage(selected)}
             </blockquote>
+            {links ? <p className="text-secondary text-ink-muted">Podrás editar el mensaje en WhatsApp antes de enviarlo.</p> : null}
             {links ? (
               <a href={links[selected]} target="_blank" rel="noopener noreferrer" className={`${buttonPrimary} w-full`}>
                 Abrir WhatsApp
