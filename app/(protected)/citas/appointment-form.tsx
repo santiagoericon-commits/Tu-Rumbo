@@ -3,14 +3,16 @@
 import { useActionState, useState } from "react";
 import { SubmitButton } from "@/components/submit-button";
 import { Notice } from "@/components/ui/notice";
-import { buttonPrimary, field, fieldLabel } from "@/components/ui/styles";
+import { buttonPrimary, field, fieldHint, fieldLabel, optionalTag } from "@/components/ui/styles";
 import { APPOINTMENT_ERROR_MESSAGES, APPOINTMENT_SAVED_MESSAGE } from "@/lib/appointment-messages";
 import { MAX_APPOINTMENT_NOTES_LENGTH, MAX_TITLE_LENGTH } from "@/lib/appointment-validation";
 import { createAppointmentAction, type CreateAppointmentState } from "./actions";
 import type { AppointmentValues } from "./types";
 
 const INITIAL: CreateAppointmentState = { status: "idle" };
+const TITLE_ID = "cita-titulo";
 const TITLE_HINT_ID = "titulo-ejemplo";
+const NOTES_ID = "cita-notas";
 const NOTES_HINT_ID = "notas-cita-limite";
 
 type AppointmentFormProps = { todayLocal: string; maxDate: string };
@@ -33,26 +35,30 @@ export function AppointmentForm({ todayLocal, maxDate }: AppointmentFormProps) {
   }
 
   return (
-    <form action={submit} className="mt-3 flex flex-col gap-5">
+    <form action={submit} className="mt-5 flex flex-col gap-5">
+      {/* La ayuda va entre la etiqueta y el campo para leerse antes de escribir; fuera del <label>
+          para no sumarse al nombre accesible (llega por aria-describedby). */}
       <div className="flex flex-col gap-2">
-        <label className={fieldLabel}>
+        <label htmlFor={TITLE_ID} className="text-body text-ink">
           Título
-          <input
-            className={field}
-            type="text"
-            name="title"
-            required
-            maxLength={MAX_TITLE_LENGTH}
-            autoComplete="off"
-            defaultValue={values?.title ?? ""}
-            aria-describedby={TITLE_HINT_ID}
-          />
         </label>
-        <p id={TITLE_HINT_ID} className="text-secondary text-ink-muted">
+        <p id={TITLE_HINT_ID} className={`${fieldHint} -mt-1`}>
           Por ejemplo: Estudio de control
         </p>
+        <input
+          id={TITLE_ID}
+          className={field}
+          type="text"
+          name="title"
+          required
+          maxLength={MAX_TITLE_LENGTH}
+          autoComplete="off"
+          defaultValue={values?.title ?? ""}
+          aria-describedby={TITLE_HINT_ID}
+        />
       </div>
 
+      {/* Fecha y hora apiladas: en una fila a 390 px la hora en 12 h ("10:30 p.m.") no cabe a 18 px. */}
       <label className={fieldLabel}>
         Fecha
         <input
@@ -72,20 +78,21 @@ export function AppointmentForm({ todayLocal, maxDate }: AppointmentFormProps) {
       </label>
 
       <div className="flex flex-col gap-2">
-        <label className={fieldLabel}>
-          Notas (opcional)
-          <textarea
-            className={`${field} py-3`}
-            name="notes"
-            rows={3}
-            maxLength={MAX_APPOINTMENT_NOTES_LENGTH}
-            defaultValue={values?.notes ?? ""}
-            aria-describedby={NOTES_HINT_ID}
-          />
+        <label htmlFor={NOTES_ID} className="text-body text-ink">
+          Notas <span className={optionalTag}>opcional</span>
         </label>
-        <p id={NOTES_HINT_ID} className="text-secondary text-ink-muted">
+        <p id={NOTES_HINT_ID} className={`${fieldHint} -mt-1`}>
           Hasta {MAX_APPOINTMENT_NOTES_LENGTH} caracteres.
         </p>
+        <textarea
+          id={NOTES_ID}
+          className={`${field} min-h-28 resize-none py-3`}
+          name="notes"
+          rows={3}
+          maxLength={MAX_APPOINTMENT_NOTES_LENGTH}
+          defaultValue={values?.notes ?? ""}
+          aria-describedby={NOTES_HINT_ID}
+        />
       </div>
 
       {state.status === "error" ? <Notice kind="error">{APPOINTMENT_ERROR_MESSAGES[state.code]}</Notice> : null}

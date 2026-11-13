@@ -5,7 +5,8 @@ import { CalendarSheetIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Notice } from "@/components/ui/notice";
 import { PageHeader } from "@/components/ui/page-header";
-import { card, cardTitle, textLink } from "@/components/ui/styles";
+import { FormCardHeader } from "@/components/ui/form-card-header";
+import { card, textLink } from "@/components/ui/styles";
 import { partitionAppointments } from "@/lib/appointment-list";
 import { MAX_APPOINTMENT_OFFSET_DAYS } from "@/lib/appointment-validation";
 import { formatLongDate, formatTime } from "@/lib/date-range";
@@ -104,9 +105,13 @@ export default async function CitasPage() {
       </section>
 
       <section id="agregar-cita" aria-labelledby="agregar-cita-titulo" className={`${card} mt-4`}>
-        <h2 id="agregar-cita-titulo" className={cardTitle}>
-          Agregar cita
-        </h2>
+        {/* [PENDIENTE REVISIÓN PROFESIONAL] */}
+        <FormCardHeader
+          section="citas"
+          titleId="agregar-cita-titulo"
+          title="Agregar cita"
+          intro="Anota la fecha y la hora para tenerla a la mano."
+        />
         <AppointmentForm todayLocal={todayLocal} maxDate={maxDate} />
       </section>
 
