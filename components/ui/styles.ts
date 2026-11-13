@@ -27,3 +27,17 @@ export const field =
 export const card = "rounded-card bg-surface p-5 shadow-card";
 
 export const cardTitle = "font-serif text-subtitle text-ink";
+
+// Formularios de alta (medicamento, cita): ayuda entre la etiqueta y el campo, marca "opcional"
+// discreta, grupos separados por `line` y el botón para sumar una fila (acción en pine, sin borde
+// para que no se confunda con un campo).
+export const fieldHint = "text-secondary text-ink-muted";
+
+export const optionalTag = "ms-1 text-secondary font-normal text-ink-muted";
+
+export const formGroup = "flex min-w-0 flex-col gap-5 border-t border-line pt-5";
+
+export const formGroupTitle = "text-name text-ink";
+
+export const buttonAdd =
+  "inline-flex min-h-12 items-center gap-2 self-start rounded-control px-3 -ms-3 text-left text-button text-accent transition-[background-color,scale] duration-150 ease-out-strong hover:bg-surface-muted active:bg-surface-muted motion-safe:active:scale-[0.98]";

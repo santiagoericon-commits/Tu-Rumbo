@@ -166,3 +166,11 @@ export function LogOutIcon(props: IconProps) {
     </Svg>
   );
 }
+
+export function PlusIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M5 12h14M12 5v14" />
+    </Svg>
+  );
+}

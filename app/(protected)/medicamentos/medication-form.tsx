@@ -1,13 +1,14 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState } from "react";
 import { SubmitButton } from "@/components/submit-button";
 import { Notice } from "@/components/ui/notice";
-import { buttonPrimary, buttonSecondary, enterFromAbove, field, fieldLabel } from "@/components/ui/styles";
+import { buttonPrimary, field, fieldLabel, formGroup, formGroupTitle, optionalTag } from "@/components/ui/styles";
 import { MEDICATION_ERROR_MESSAGES } from "@/lib/medication-messages";
-import { MAX_DOSAGE_LENGTH, MAX_NAME_LENGTH, MAX_TIMES } from "@/lib/medication-validation";
+import { MAX_DOSAGE_LENGTH, MAX_NAME_LENGTH } from "@/lib/medication-validation";
 import { clearFirstMedication, markFirstMedication } from "../first-medication";
 import { createMedicationAction, type CreateMedicationState } from "./actions";
+import { ScheduleTimesField } from "./schedule-times-field";
 import { SupplyCountField } from "./supply-count-field";
 
 const INITIAL: CreateMedicationState = { status: "idle" };
@@ -36,93 +37,56 @@ export function MedicationForm({ todayLocal, maxStartDate, isFirst }: Medication
     }
   }
   const [state, formAction] = useActionState(create, INITIAL);
-  // Un horario por entrada; empieza con uno vacío y se agregan hasta MAX_TIMES.
-  const [times, setTimes] = useState<string[]>([""]);
-
-  function updateTime(index: number, value: string) {
-    setTimes((current) => current.map((time, i) => (i === index ? value : time)));
-  }
-
-  // Con keys por índice se desmonta la última fila, así que el input anterior sigue ahí para recibir el foco.
-  function removeTime(index: number, fieldset: Element | null) {
-    fieldset?.querySelectorAll<HTMLInputElement>('input[name="times"]')[index - 1]?.focus();
-    setTimes((current) => current.filter((_, i) => i !== index));
-  }
-
   return (
     <form
       action={formAction}
       onSubmit={() => (isFirst ? markFirstMedication() : clearFirstMedication())}
-      className="mt-3 flex flex-col gap-5"
+      className="mt-5 flex flex-col gap-6"
     >
-      {/* [PENDIENTE REVISIÓN PROFESIONAL] */}
-      <p className="text-body text-ink-muted">
-        Escribe el medicamento, la dosis y los horarios tal como te los indicó tu médico.
-      </p>
+      {/* Grupo 1: qué tomas. La indicación "tal como te los indicó tu médico" vive en el encabezado (page.tsx). */}
+      <fieldset className={formGroup}>
+        {/* [PENDIENTE REVISIÓN PROFESIONAL] */}
+        <legend className={`${formGroupTitle} float-left w-full`}>Qué tomas</legend>
+        <label className={fieldLabel}>
+          Nombre del medicamento
+          <input className={field} type="text" name="name" required maxLength={MAX_NAME_LENGTH} autoComplete="off" />
+        </label>
 
-      <label className={fieldLabel}>
-        Nombre del medicamento
-        <input className={field} type="text" name="name" required maxLength={MAX_NAME_LENGTH} autoComplete="off" />
-      </label>
-
-      <label className={fieldLabel}>
-        Dosis (opcional)
-        <input className={field} type="text" name="dosage" maxLength={MAX_DOSAGE_LENGTH} autoComplete="off" />
-      </label>
-
-      <fieldset className="flex min-w-0 flex-col gap-3">
-        <legend className="mb-3 text-body text-ink">Horarios</legend>
-        {times.map((time, index) => (
-          // Las filas nuevas (index > 0) solo se montan al agregar: entran y reciben el foco.
-          <div key={index} className={`flex items-end gap-2 ${index > 0 ? enterFromAbove : ""}`}>
-            <label className={`${fieldLabel} grow`}>
-              Horario {index + 1}
-              <input
-                className={field}
-                type="time"
-                name="times"
-                autoFocus={index > 0}
-                required={index === 0}
-                value={time}
-                onChange={(event) => updateTime(index, event.target.value)}
-              />
-            </label>
-            {index > 0 ? (
-              <button
-                type="button"
-                onClick={(event) => removeTime(index, event.currentTarget.closest("fieldset"))}
-                className={`${buttonSecondary} min-h-13`}
-              >
-                Quitar<span className="sr-only"> horario {index + 1}</span>
-              </button>
-            ) : null}
-          </div>
-        ))}
-        {times.length < MAX_TIMES ? (
-          <button
-            type="button"
-            onClick={() => setTimes((current) => [...current, ""])}
-            className={`${buttonSecondary} self-start`}
-          >
-            Agregar otro horario
-          </button>
-        ) : null}
+        <label className={fieldLabel}>
+          <span>
+            Dosis <span className={optionalTag}>opcional</span>
+          </span>
+          <input className={field} type="text" name="dosage" maxLength={MAX_DOSAGE_LENGTH} autoComplete="off" />
+        </label>
       </fieldset>
 
-      <label className={fieldLabel}>
-        Fecha de inicio
-        <input
-          className={field}
-          type="date"
-          name="startDate"
-          required
-          defaultValue={todayLocal}
-          min={todayLocal}
-          max={maxStartDate}
-        />
-      </label>
+      {/* Grupo 2: cuándo. Los horarios son un fieldset propio dentro del grupo. */}
+      <fieldset className={formGroup}>
+        {/* [PENDIENTE REVISIÓN PROFESIONAL] */}
+        <legend className={`${formGroupTitle} float-left w-full`}>Cuándo</legend>
 
-      <SupplyCountField hintId="tomas-alta" />
+        <ScheduleTimesField />
+
+        <label className={fieldLabel}>
+          Fecha de inicio
+          <input
+            className={field}
+            type="date"
+            name="startDate"
+            required
+            defaultValue={todayLocal}
+            min={todayLocal}
+            max={maxStartDate}
+          />
+        </label>
+      </fieldset>
+
+      {/* Grupo 3: surtido (opcional). */}
+      <fieldset className={formGroup}>
+        {/* [PENDIENTE REVISIÓN PROFESIONAL] */}
+        <legend className={`${formGroupTitle} float-left w-full`}>Surtido</legend>
+        <SupplyCountField hintId="tomas-alta" />
+      </fieldset>
 
       {state.status === "error" ? <Notice kind="error">{MEDICATION_ERROR_MESSAGES[state.code]}</Notice> : null}
 

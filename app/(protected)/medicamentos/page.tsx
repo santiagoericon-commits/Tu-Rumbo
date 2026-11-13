@@ -3,7 +3,8 @@ import { PathSignIllustration } from "@/components/illustrations";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Notice } from "@/components/ui/notice";
 import { PageHeader } from "@/components/ui/page-header";
-import { card, cardTitle } from "@/components/ui/styles";
+import { FormCardHeader } from "@/components/ui/form-card-header";
+import { card } from "@/components/ui/styles";
 import { addDaysIso, formatLocalDate } from "@/lib/local-time";
 import { MAX_START_OFFSET_DAYS } from "@/lib/medication-validation";
 import { formatScheduleTimes, formatStartDate } from "@/lib/schedule-format";
@@ -86,9 +87,13 @@ export default async function MedicamentosPage() {
       )}
 
       <section id="agregar-medicamento" aria-labelledby="agregar-medicamento-titulo" className={`${card} mt-4`}>
-        <h2 id="agregar-medicamento-titulo" className={cardTitle}>
-          Agregar medicamento
-        </h2>
+        {/* [PENDIENTE REVISIÓN PROFESIONAL] */}
+        <FormCardHeader
+          section="medicamentos"
+          titleId="agregar-medicamento-titulo"
+          title="Agregar medicamento"
+          intro="Escribe el medicamento, la dosis y los horarios tal como te los indicó tu médico."
+        />
         <MedicationForm todayLocal={todayLocal} maxStartDate={maxStartDate} isFirst={!error && medications.length === 0} />
       </section>
     </div>

@@ -250,6 +250,12 @@ html[data-opening="done"] [data-opening-curtain] {
     scroll-padding-bottom: var(--tabbar-space);
   }
 
+  /* El ícono nativo de fecha y hora (Chromium) sale en negro puro; se baja al tono de ink-muted. */
+  input::-webkit-calendar-picker-indicator {
+    opacity: 0.7;
+    cursor: pointer;
+  }
+
   body {
     background: var(--color-canvas);
     color: var(--color-ink);
